@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Orders</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        .order {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<button onclick="logout()">Logout</button>
+<h2>📦 All Orders</h2>
+
+<!-- ✅ SEARCH BAR (OUTSIDE SCRIPT) -->
+<input 
+    type="text" 
+    placeholder="Search by name or phone..." 
+    onkeyup="searchOrders(this.value)"
+    style="padding:8px; width:250px; margin-bottom:10px;"
+>
+
+<br><br>
+
+<select onchange="filterOrders(this.value)">
+    <option value="All">All Orders</option>
+    <option value="Pending">Pending</option>
+    <option value="Processing">Processing</option>
+    <option value="Shipped">Shipped</option>
+    <option value="Delivered">Delivered</option>
+</select>
+
+<h3 id="revenue">Total Revenue: ₹0</h3>
+<h4 id="order-count">Orders: 0</h4>
+<h4 id="pending-count">Pending: 0</h4>
+
+<div id="orders"></div>
+
+<script>
+
+if (localStorage.getItem("admin") !== "true") {
+    window.location.href = "admin-login.html";
+}
+    // 🔒 PROTECT PAGE (IMPROVED)
+    if (localStorage.getItem("admin") !== "true") {
+        window.location.replace("admin-login.html");
+    }
+    
+    let allOrders = [];
+    
+    // LOAD ORDERS
+    async function loadOrders() {
+        try {
+            const res = await fetch("http://localhost:3000/orders");
+            allOrders = await res.json();
+    
+            let totalRevenue = 0;
+            allOrders.forEach(order => {
+                totalRevenue += order.total || 0;
+            });
+    
+            document.getElementById("revenue").innerText =
+                "Total Revenue: ₹" + totalRevenue;
+    
+            document.getElementById("order-count").innerText =
+                "Orders: " + allOrders.length;
+    
+            const pending = allOrders.filter(o =>
+                (o.status || "").toLowerCase() === "pending"
+            );
+    
+            document.getElementById("pending-count").innerText =
+                "Pending: " + pending.length;
+    
+            renderOrders(allOrders);
+    
+        } catch (err) {
+            console.error("Error loading orders:", err);
+        }
+    }
+    
+    // RENDER
+    function renderOrders(data) {
+        const container = document.getElementById("orders");
+        container.innerHTML = "";
+    
+        if (!data.length) {
+            container.innerHTML = "<p>No orders found</p>";
+            return;
+        }
+    
+        data.forEach(order => {
+            let div = document.createElement("div");
+            div.className = "order";
+    
+            let itemsList = "";
+    
+            if (order.items && order.items.length) {
+                order.items.forEach(item => {
+                    itemsList += `${item.name || "Item"} × ${item.quantity || 1}<br>`;
+                });
+            } else {
+                itemsList = "No items";
+            }
+    
+            // ✅ FIXED LINE
+            const status = (order.status || "Pending").trim().toLowerCase();
+    
+            const color =
+                status === "pending" ? "orange" :
+                status === "processing" ? "blue" :
+                status === "shipped" ? "purple" :
+                status === "delivered" ? "green" :
+                "gray";
+    
+            div.innerHTML = `
+                <h3>${order.name || "No Name"}</h3>
+                <p><b>Phone:</b> ${order.phone || "N/A"}</p>
+                <p><b>Address:</b> ${order.address || "N/A"}</p>
+                <p><b>Items:</b><br>${itemsList}</p>
+                <p><b>Total:</b> ₹${order.total || 0}</p>
+    
+                <p>
+                    <b>Status:</b> 
+                    <span style="padding:5px 10px; border-radius:10px; color:white; background:${color}">
+                        ${order.status || "Pending"}
+                    </span>
+                </p>
+    
+                <select onchange="updateStatus('${order._id}', this.value)">
+                    <option ${status === "pending" ? "selected" : ""}>Pending</option>
+                    <option ${status === "processing" ? "selected" : ""}>Processing</option>
+                    <option ${status === "shipped" ? "selected" : ""}>Shipped</option>
+                    <option ${status === "delivered" ? "selected" : ""}>Delivered</option>
+                </select>
+    
+                <p><b>Date:</b> ${order.date ? new Date(order.date).toLocaleString() : "N/A"}</p>
+            `;
+    
+            container.appendChild(div);
+        });
+    }
+    
+    // FILTER
+    function filterOrders(status) {
+        if (status === "All") {
+            renderOrders(allOrders);
+        } else {
+            const filtered = allOrders.filter(order =>
+                (order.status || "").toLowerCase() === status.toLowerCase()
+            );
+            renderOrders(filtered);
+        }
+    }
+    
+    // SEARCH
+    function searchOrders(query) {
+        const filtered = allOrders.filter(order =>
+            (order.name || "").toLowerCase().includes(query.toLowerCase()) ||
+            (order.phone || "").includes(query)
+        );
+    
+        renderOrders(filtered);
+    }
+    
+    // UPDATE STATUS
+    async function updateStatus(id, status) {
+        try {
+            await fetch(`http://localhost:3000/orders/${id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ status })
+            });
+    
+            alert("Status updated");
+            loadOrders();
+    
+        } catch (err) {
+            console.error("Update error:", err);
+        }
+    }
+    
+    // INITIAL LOAD
+    loadOrders();
+    
+    function logout() {
+        localStorage.removeItem("admin");
+        window.location.href = "admin-login.html";
+    }
+    
+    </script>
+
+</body>
+</html>

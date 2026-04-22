@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <title>Checkout</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        input {
+            display: block;
+            margin: 10px 0;
+            padding: 8px;
+            width: 300px;
+        }
+
+        button {
+            padding: 10px;
+            background: green;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Checkout 🧾</h2>
+
+<h3>Customer Details</h3>
+
+<input id="name" placeholder="Your Name">
+<input id="address" placeholder="Address">
+<input id="phone" placeholder="Phone Number">
+
+<h3>Order Summary</h3>
+
+<ul id="order-items"></ul>
+
+<h3 id="total">Total: ₹0</h3>
+
+<button onclick="placeOrder()">Place Order</button>
+
+<script>
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+// LOAD ORDER
+function loadOrder() {
+    let list = document.getElementById("order-items");
+    let total = 0;
+
+    list.innerHTML = "";
+
+    cart.forEach(item => {
+        total += item.price * item.quantity;
+
+        let li = document.createElement("li");
+        li.innerText = `${item.name} - ₹${item.price} × ${item.quantity}`;
+        list.appendChild(li);
+    });
+
+    document.getElementById("total").innerText = "Total: ₹" + total;
+}
+
+// PLACE ORDER
+async function placeOrder() {
+
+    let name = document.getElementById("name").value;
+    let address = document.getElementById("address").value;
+    let phone = document.getElementById("phone").value;
+
+    if (!name || !address || !phone) {
+        alert("Please fill all details");
+        return;
+    }
+
+    let total = 0;
+    cart.forEach(item => {
+        total += item.price * item.quantity;
+    });
+
+    let order;
+
+    // 🔥 CREATE ORDER (LIVE BACKEND)
+    try {
+        const res = await fetch("https://nutribliss-backend-3.onrender.com/create-order", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ amount: total })
+        });
+
+        order = await res.json();
+
+    } catch (err) {
+        alert("Server error. Payment failed ❌");
+        return;
+    }
+
+    // 🔥 RAZORPAY POPUP
+    const options = {
+        key: "rzp_test_SdHJXu7iVmjrLs",
+        amount: order.amount,
+        currency: "INR",
+        name: "NutriBliss",
+        description: "Dry Fruits Purchase",
+        order_id: order.id,
+
+        prefill: {
+            name: name,
+            contact: phone
+        },
+
+        // ✅ SUCCESS HANDLER
+        handler: async function (response) {
+
+            await fetch("https://nutribliss-backend-3.onrender.com/save-order", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name,
+                    address,
+                    phone,
+                    cart,
+                    total,
+                    paymentId: response.razorpay_payment_id
+                })
+            });
+
+            alert("Payment Successful 🎉");
+
+            localStorage.removeItem("cart");
+            window.location.href = "index.html";
+        }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+}
+
+// INITIAL LOAD
+loadOrder();
+
+</script>
+
+</body>
+</html>
