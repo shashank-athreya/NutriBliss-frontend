@@ -1,13 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <script>
-        if (localStorage.getItem("admin") !== "true") {
-            window.location.href = "admin-login.html";
-        }
-        </script>
 <head>
-
-    <!-- 🔐 SECURITY -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src * 'self' data: blob:;
         connect-src *;
@@ -18,18 +11,15 @@
 
     <title>Admin Panel</title>
 
-    <!-- 🔐 LOGIN PROTECTION (RUNS FIRST) -->
     <script>
-        const isAdmin = localStorage.getItem("admin");
-
-        if (isAdmin !== "true") {
-            window.location.replace("admin-login.html");
+        if (localStorage.getItem("admin") !== "true") {
+            window.location.href = "admin-login.html";
         }
     </script>
 
     <style>
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             padding: 20px;
         }
 
@@ -50,14 +40,25 @@
             margin-bottom: 15px;
             border-bottom: 1px solid #ccc;
             padding-bottom: 10px;
+            list-style: none;
+        }
+
+        .top-bar {
+            margin-bottom: 20px;
+        }
+
+        .top-bar a {
+            margin-left: 10px;
         }
     </style>
-
 </head>
 
 <body>
 
-<button onclick="logout()">Logout</button>
+<div class="top-bar">
+    <button onclick="logout()">Logout</button>
+    <a href="admin-orders.html">Go to Orders</a>
+</div>
 
 <h2>Add Product</h2>
 
@@ -71,13 +72,10 @@
 <ul id="admin-products"></ul>
 
 <script>
-
 const BASE_URL = "https://nutribliss-backend-3.onrender.com";
 
-// ✅ LOAD PRODUCTS (AUTO RUN)
 window.onload = loadProducts;
 
-// ADD PRODUCT
 async function addProduct() {
     const name = document.getElementById("name").value.trim();
     const price = document.getElementById("price").value.trim();
@@ -97,35 +95,37 @@ async function addProduct() {
             body: JSON.stringify({ name, price, image })
         });
 
-        if (!res.ok) throw new Error("Failed to add product");
+        if (!res.ok) {
+            throw new Error("Failed to add product");
+        }
 
         alert("Product added successfully 🚀");
 
-        // clear inputs
         document.getElementById("name").value = "";
         document.getElementById("price").value = "";
         document.getElementById("image").value = "";
 
         loadProducts();
-
     } catch (err) {
-        console.error(err);
+        console.error("Add product error:", err);
         alert("Error adding product ❌");
     }
 }
 
-// DELETE
 async function deleteProduct(id) {
     if (!confirm("Delete this product?")) return;
 
-    await fetch(`${BASE_URL}/products/${id}`, {
-        method: "DELETE"
-    });
+    try {
+        await fetch(`${BASE_URL}/products/${id}`, {
+            method: "DELETE"
+        });
 
-    loadProducts();
+        loadProducts();
+    } catch (err) {
+        console.error("Delete error:", err);
+    }
 }
 
-// EDIT
 async function editProduct(id, name, price, image) {
     const newName = prompt("New name:", name);
     const newPrice = prompt("New price:", price);
@@ -133,22 +133,25 @@ async function editProduct(id, name, price, image) {
 
     if (!newName || !newPrice) return;
 
-    await fetch(`${BASE_URL}/products/${id}`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            name: newName,
-            price: newPrice,
-            image: newImage
-        })
-    });
+    try {
+        await fetch(`${BASE_URL}/products/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: newName,
+                price: newPrice,
+                image: newImage
+            })
+        });
 
-    loadProducts();
+        loadProducts();
+    } catch (err) {
+        console.error("Edit error:", err);
+    }
 }
 
-// ✅ LOAD PRODUCTS (FIXED + SAFE)
 async function loadProducts() {
     const list = document.getElementById("admin-products");
     list.innerHTML = "Loading...";
@@ -156,14 +159,15 @@ async function loadProducts() {
     try {
         const res = await fetch(`${BASE_URL}/products`);
 
-        if (!res.ok) throw new Error("API failed");
+        if (!res.ok) {
+            throw new Error("Failed to fetch products");
+        }
 
         const data = await res.json();
-
         list.innerHTML = "";
 
         if (!data || data.length === 0) {
-            list.innerHTML = "<p>No products found</p>";
+            list.innerHTML = "<li>No products found</li>";
             return;
         }
 
@@ -180,19 +184,16 @@ async function loadProducts() {
 
             list.appendChild(li);
         });
-
     } catch (err) {
-        console.error(err);
-        list.innerHTML = "<p style='color:red'>Failed to load products</p>";
+        console.error("Load products error:", err);
+        list.innerHTML = "<li style='color:red;'>Failed to load products</li>";
     }
 }
 
-// LOGOUT
 function logout() {
     localStorage.removeItem("admin");
     window.location.href = "admin-login.html";
 }
-
 </script>
 
 </body>
