@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Track Order - NutriBliss</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 15px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .order-card {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background: #f1f8e9;
+      border-left: 5px solid #2e7d32;
+    }
+
+    .status {
+      font-weight: bold;
+      color: #2e7d32;
+    }
+
+    .error {
+      color: red;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Track Your Order</h2>
+    <p>Enter your phone number to check your order status.</p>
+
+    <input type="text" id="phone" placeholder="Enter phone number">
+
+    <button onclick="trackOrder()">Track Order</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const API_URL = "https://nutribliss-backend-3.onrender.com";
+
+    async function trackOrder() {
+      const phone = document.getElementById("phone").value.trim();
+      const result = document.getElementById("result");
+
+      result.innerHTML = "";
+
+      if (!phone) {
+        result.innerHTML = `<p class="error">Please enter phone number</p>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}/track-order/${phone}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          result.innerHTML = `<p class="error">${data.message || "No orders found"}</p>`;
+          return;
+        }
+
+        let html = "";
+
+        data.forEach(order => {
+          html += `
+            <div class="order-card">
+              <p><strong>Name:</strong> ${order.name}</p>
+              <p><strong>Phone:</strong> ${order.phone}</p>
+              <p><strong>Total:</strong> ₹${order.total}</p>
+              <p><strong>Status:</strong> <span class="status">${order.status}</span></p>
+              <p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>
+              <p><strong>Date:</strong> ${new Date(order.date).toLocaleDateString()}</p>
+            </div>
+          `;
+        });
+
+        result.innerHTML = html;
+
+      } catch (error) {
+        result.innerHTML = `<p class="error">Something went wrong. Try again.</p>`;
+      }
+    }
+  </script>
+
+</body>
+</html>
