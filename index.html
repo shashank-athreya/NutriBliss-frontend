@@ -2,121 +2,279 @@
 <html>
 <head>
     <title>NutriBliss Dry Fruits</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        .products {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fffaf2;
+            color: #333;
+        }
+
+        .navbar {
+            background: #2e7d32;
+            color: white;
+            padding: 18px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .navbar h2 {
+            font-size: 26px;
+        }
+
+        .nav-links {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
         }
-        
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #fff3e0, #e8f5e9);
+        }
+
+        .hero h1 {
+            font-size: 42px;
+            color: #2e7d32;
+            margin-bottom: 15px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            color: #2e7d32;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 25px;
+        }
+
         .card {
             background: white;
-            padding: 15px;
-            border-radius: 15px;
-            width: 220px;
+            padding: 18px;
+            border-radius: 18px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 22px rgba(0,0,0,0.1);
             transition: 0.3s;
+            border: 1px solid #f1e5d0;
         }
-        
+
         .card:hover {
-            transform: scale(1.05);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
         }
-        
-        button {
-            margin-top: 10px;
-            padding: 10px;
+
+        .card img {
+            width: 100%;
+            height: 180px;
+            object-fit: contain;
+            border-radius: 14px;
+            background: #fff8ed;
+            margin-bottom: 15px;
+        }
+
+        .card h3 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .price {
+            color: #ff7f00;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .buy-btn {
+            width: 100%;
+            padding: 12px;
             background: #ff7f00;
             border: none;
             color: white;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            transition: 0.3s;
         }
-        </style>
+
+        .buy-btn:hover {
+            background: #e56f00;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2e7d32;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 8px;
+            display: none;
+            z-index: 999;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .empty {
+            text-align: center;
+            font-size: 18px;
+            color: #777;
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 16px 20px;
+                text-align: center;
+                justify-content: center;
+                gap: 12px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .nav-links {
+                justify-content: center;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
+    <div class="message" id="message">Added to cart ✅</div>
+
     <!-- Navbar -->
     <div class="navbar">
-        <h2>NutriBliss Dry Fruits</h2>
+        <h2>NutriBliss</h2>
         <div class="nav-links">
-            <a href="#home">Home</a>
+            <a href="index.html">Home</a>
             <a href="#products">Products</a>
+            <a href="track-order.html">Track Order</a>
             <a href="cart.html">Cart (<span id="cart-count">0</span>)</a>
         </div>
     </div>
 
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Premium Dry Fruits</h1>
+        <p>Fresh, healthy and handpicked dry fruits delivered to your doorstep.</p>
+    </section>
+
     <!-- Products -->
-    <div class="container">
-        <h2>Our Products</h2>
+    <div class="container" id="products">
+        <h2 class="section-title">Our Products</h2>
 
-        <div class="products" id="product-list">
-
-           
-
-        </div>
+        <div class="products" id="product-list"></div>
     </div>
 
     <script>
-        let cart = JSON.parse(localStorage.getItem("cart")) || [];
-        
+        const API_URL = "https://nutribliss-backend-3.onrender.com";
+
         updateCartCount();
-        
-        // ✅ Fetch products from backend
-        fetch("https://nutribliss-backend-3.onrender.com/products")
+
+        fetch(`${API_URL}/products`)
             .then(res => res.json())
             .then(data => {
-                let productList = document.getElementById("product-list");
-        
+                const productList = document.getElementById("product-list");
+
+                if (!data || data.length === 0) {
+                    productList.innerHTML = `<p class="empty">No products available right now.</p>`;
+                    return;
+                }
+
                 data.forEach(product => {
-                    let div = document.createElement("div");
+                    const div = document.createElement("div");
                     div.className = "card";
-        
+
                     div.innerHTML = `
-                        <img src="${product.image || 'https://via.placeholder.com/200'}">
+                        <img src="${product.image || 'https://via.placeholder.com/200'}" alt="${product.name}">
                         <h3>${product.name}</h3>
-                        <p>₹${product.price}/kg</p>
-                        <button class="buy-btn">Buy Now</button>
-                        `;
-                        div.querySelector(".buy-btn").addEventListener("click", () => {
+                        <p class="price">₹${product.price}/kg</p>
+                        <button class="buy-btn">Add to Cart</button>
+                    `;
+
+                    div.querySelector(".buy-btn").addEventListener("click", () => {
                         addToCart(product);
-                        });
+                    });
+
                     productList.appendChild(div);
                 });
+            })
+            .catch(error => {
+                document.getElementById("product-list").innerHTML =
+                    `<p class="empty">Failed to load products. Please try again later.</p>`;
             });
-        
-        // Cart functions
+
         function updateCartCount() {
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            document.getElementById("cart-count").innerText = cart.length;
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById("cart-count").innerText = totalItems;
         }
-        
+
         function addToCart(product) {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-    let existing = cart.find(item => item.name === product.name);
+            let existing = cart.find(item => item.name === product.name);
 
-    if (existing) {
-        existing.quantity += 1;
-    } else {
-        cart.push({
-            id: Date.now(),
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            quantity: 1
-        });
-    }
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({
+                    id: product._id || Date.now(),
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    quantity: 1
+                });
+            }
 
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartCount();
-}
-        
-        function updateCart() {
-            document.getElementById("cart-count").innerText = cart.length;
+            localStorage.setItem("cart", JSON.stringify(cart));
+            updateCartCount();
+            showMessage();
         }
-        </script>
+
+        function showMessage() {
+            const message = document.getElementById("message");
+            message.style.display = "block";
+
+            setTimeout(() => {
+                message.style.display = "none";
+            }, 1800);
+        }
+    </script>
+
 </body>
 </html>
