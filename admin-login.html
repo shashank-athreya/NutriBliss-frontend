@@ -100,7 +100,7 @@ async function login() {
         }
 
         localStorage.setItem("adminToken", data.token);
-        window.location.href = "admin.html";
+        window.location.assign("admin.html");
 
     } catch (err) {
         error.innerText = "Server error. Try again.";
