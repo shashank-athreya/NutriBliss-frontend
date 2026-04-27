@@ -1,181 +1,213 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Orders</title>
+    <title>Admin Orders - NutriBliss</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script>
-    if (localStorage.getItem("admin") !== "true") {
-        window.location.href = "admin-login.html";
-    }
+        if (!localStorage.getItem("adminToken")) {
+            window.location.href = "admin-login.html";
+        }
     </script>
 
     <style>
+        * { box-sizing: border-box; }
+
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #fffaf2;
+            color: #333;
+        }
+
+        .navbar {
+            background: #2e7d32;
+            color: white;
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar a, .navbar button {
+            color: white;
+            background: #ff7f00;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 25px;
+        }
+
+        h2 {
+            color: #2e7d32;
+        }
+
+        .order-card {
+            background: white;
             padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
 
-        .order {
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 15px;
+        .order-card p {
+            margin: 7px 0;
+        }
+
+        .items {
+            background: #fffaf2;
+            padding: 12px;
             border-radius: 10px;
+            margin-top: 10px;
         }
 
-        button, select {
-            margin: 5px 0;
-            padding: 6px 10px;
+        select {
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+
+        .update-btn {
+            padding: 8px 12px;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #777;
+            margin-top: 30px;
+        }
+
+        @media(max-width: 600px) {
+            .navbar {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .navbar a, .navbar button {
+                margin: 4px;
+            }
         }
     </style>
 </head>
+
 <body>
 
-<button onclick="logout()">Logout</button>
-<a href="admin.html">Go to Products</a>
+<div class="navbar">
+    <h2>NutriBliss Orders</h2>
+    <div>
+        <a href="admin.html">Dashboard</a>
+        <a href="index.html">View Site</a>
+        <button onclick="logout()">Logout</button>
+    </div>
+</div>
 
-<h2>📦 All Orders</h2>
-
-<input
-    type="text"
-    placeholder="Search by name or phone..."
-    onkeyup="searchOrders(this.value)"
-    style="padding:8px; width:250px; margin-bottom:10px;"
->
-
-<br><br>
-
-<select onchange="filterOrders(this.value)">
-    <option value="All">All Orders</option>
-    <option value="Pending">Pending</option>
-    <option value="Processing">Processing</option>
-    <option value="Shipped">Shipped</option>
-    <option value="Delivered">Delivered</option>
-</select>
-
-<h3 id="revenue">Total Revenue: ₹0</h3>
-<h4 id="order-count">Orders: 0</h4>
-<h4 id="pending-count">Pending: 0</h4>
-
-<div id="orders"></div>
+<div class="container">
+    <h2>All Orders</h2>
+    <div id="orders-list">Loading orders...</div>
+</div>
 
 <script>
 const BASE_URL = "https://nutribliss-backend-3.onrender.com";
-let allOrders = [];
+
+window.onload = loadOrders;
 
 async function loadOrders() {
+    const ordersList = document.getElementById("orders-list");
+    ordersList.innerHTML = "Loading orders...";
+
     try {
         const res = await fetch(`${BASE_URL}/orders`);
-        allOrders = await res.json();
 
-        let totalRevenue = 0;
-        allOrders.forEach(order => {
-            totalRevenue += order.total || 0;
-        });
-
-        document.getElementById("revenue").innerText =
-            "Total Revenue: ₹" + totalRevenue;
-
-        document.getElementById("order-count").innerText =
-            "Orders: " + allOrders.length;
-
-        const pending = allOrders.filter(o =>
-            (o.status || "").toLowerCase() === "pending"
-        );
-
-        document.getElementById("pending-count").innerText =
-            "Pending: " + pending.length;
-
-        renderOrders(allOrders);
-
-    } catch (err) {
-        console.error("Error loading orders:", err);
-        document.getElementById("orders").innerHTML = "<p>Failed to load orders</p>";
-    }
-}
-
-function renderOrders(data) {
-    const container = document.getElementById("orders");
-    container.innerHTML = "";
-
-    if (!data.length) {
-        container.innerHTML = "<p>No orders found</p>";
-        return;
-    }
-
-    data.forEach(order => {
-        let div = document.createElement("div");
-        div.className = "order";
-
-        let itemsList = "";
-
-        if (order.items && order.items.length) {
-            order.items.forEach(item => {
-                itemsList += `${item.name || "Item"} × ${item.quantity || 1}<br>`;
-            });
-        } else {
-            itemsList = "No items";
+        if (!res.ok) {
+            throw new Error("Failed to fetch orders");
         }
 
-        const status = (order.status || "Pending").trim().toLowerCase();
+        const orders = await res.json();
 
-        const color =
-            status === "pending" ? "orange" :
-            status === "processing" ? "blue" :
-            status === "shipped" ? "purple" :
-            status === "delivered" ? "green" :
-            "gray";
+        ordersList.innerHTML = "";
 
-        div.innerHTML = `
-            <h3>${order.name || "No Name"}</h3>
-            <p><b>Phone:</b> ${order.phone || "N/A"}</p>
-            <p><b>Address:</b> ${order.address || "N/A"}</p>
-            <p><b>Items:</b><br>${itemsList}</p>
-            <p><b>Total:</b> ₹${order.total || 0}</p>
+        if (!orders || orders.length === 0) {
+            ordersList.innerHTML = `<p class="empty">No orders found</p>`;
+            return;
+        }
 
-            <p>
-                <b>Status:</b>
-                <span style="padding:5px 10px; border-radius:10px; color:white; background:${color}">
-                    ${order.status || "Pending"}
-                </span>
-            </p>
+        orders.forEach(order => {
+            let itemsHtml = "";
 
-            <select onchange="updateStatus('${order._id}', this.value)">
-                <option ${status === "pending" ? "selected" : ""}>Pending</option>
-                <option ${status === "processing" ? "selected" : ""}>Processing</option>
-                <option ${status === "shipped" ? "selected" : ""}>Shipped</option>
-                <option ${status === "delivered" ? "selected" : ""}>Delivered</option>
-            </select>
+            if (order.items && order.items.length > 0) {
+                order.items.forEach(item => {
+                    itemsHtml += `
+                        <p>
+                            <strong>${item.name}</strong> -
+                            ₹${item.price} × ${item.quantity}
+                        </p>
+                    `;
+                });
+            } else {
+                itemsHtml = "<p>No items found</p>";
+            }
 
-            <p><b>Date:</b> ${order.date ? new Date(order.date).toLocaleString() : "N/A"}</p>
-        `;
+            const div = document.createElement("div");
+            div.className = "order-card";
 
-        container.appendChild(div);
-    });
-}
+            div.innerHTML = `
+                <p><strong>Customer:</strong> ${order.name}</p>
+                <p><strong>Phone:</strong> ${order.phone}</p>
+                <p><strong>Address:</strong> ${order.address}</p>
+                <p><strong>Total:</strong> ₹${order.total}</p>
+                <p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>
+                <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+                <p><strong>Status:</strong> ${order.status}</p>
 
-function filterOrders(status) {
-    if (status === "All") {
-        renderOrders(allOrders);
-    } else {
-        const filtered = allOrders.filter(order =>
-            (order.status || "").toLowerCase() === status.toLowerCase()
-        );
-        renderOrders(filtered);
+                <div class="items">
+                    <strong>Items:</strong>
+                    ${itemsHtml}
+                </div>
+
+                <select id="status-${order._id}">
+                    <option value="Pending" ${order.status === "Pending" ? "selected" : ""}>Pending</option>
+                    <option value="Processing" ${order.status === "Processing" ? "selected" : ""}>Processing</option>
+                    <option value="Shipped" ${order.status === "Shipped" ? "selected" : ""}>Shipped</option>
+                    <option value="Delivered" ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
+                    <option value="Cancelled" ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
+                </select>
+
+                <button class="update-btn" onclick="updateStatus('${order._id}')">
+                    Update Status
+                </button>
+            `;
+
+            ordersList.appendChild(div);
+        });
+
+    } catch (err) {
+        console.error("Orders error:", err);
+        ordersList.innerHTML = `<p style="color:red;">Failed to load orders</p>`;
     }
 }
 
-function searchOrders(query) {
-    const filtered = allOrders.filter(order =>
-        (order.name || "").toLowerCase().includes(query.toLowerCase()) ||
-        (order.phone || "").includes(query)
-    );
+async function updateStatus(orderId) {
+    const status = document.getElementById(`status-${orderId}`).value;
 
-    renderOrders(filtered);
-}
-
-async function updateStatus(id, status) {
     try {
-        await fetch(`${BASE_URL}/orders/${id}`, {
+        const res = await fetch(`${BASE_URL}/orders/${orderId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json"
@@ -183,20 +215,23 @@ async function updateStatus(id, status) {
             body: JSON.stringify({ status })
         });
 
-        alert("Status updated");
+        if (!res.ok) {
+            throw new Error("Failed to update status");
+        }
+
+        alert("Order status updated ✅");
         loadOrders();
 
     } catch (err) {
-        console.error("Update error:", err);
+        console.error("Update status error:", err);
+        alert("Failed to update order status ❌");
     }
 }
 
 function logout() {
-    localStorage.removeItem("admin");
+    localStorage.removeItem("adminToken");
     window.location.href = "admin-login.html";
 }
-
-loadOrders();
 </script>
 
 </body>
