@@ -1,27 +1,109 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Login</title>
+    <title>Admin Login - NutriBliss</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #fffaf2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            width: 350px;
+            border-radius: 16px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #2e7d32;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 13px;
+            background: #ff7f00;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 12px;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>Admin Login</h2>
+<div class="login-box">
+    <h2>NutriBliss Admin</h2>
 
-<input id="username" placeholder="Username"><br><br>
-<input id="password" type="password" placeholder="Password"><br><br>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
 
-<button onclick="login()">Login</button>
+    <button onclick="login()">Login</button>
+
+    <p class="error" id="error"></p>
+</div>
 
 <script>
-function login() {
-    const user = document.getElementById("username").value.trim();
-    const pass = document.getElementById("password").value.trim();
+const BASE_URL = "https://nutribliss-backend-3.onrender.com";
 
-    if (user === "admin" && pass === "1234") {
-        localStorage.setItem("admin", "true");
-        window.location.href = "admin.html";   // changed here
-    } else {
-        alert("Invalid username or password");
+async function login() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const error = document.getElementById("error");
+
+    error.innerText = "";
+
+    if (!username || !password) {
+        error.innerText = "Please enter username and password";
+        return;
+    }
+
+    try {
+        const res = await fetch(`${BASE_URL}/admin-login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+            error.innerText = data.message || "Invalid login";
+            return;
+        }
+
+        localStorage.setItem("adminToken", data.token);
+        window.location.href = "admin.html";
+
+    } catch (err) {
+        error.innerText = "Server error. Try again.";
     }
 }
 </script>
