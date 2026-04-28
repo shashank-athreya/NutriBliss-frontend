@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>NutriBliss Dry Fruits</title>
+    <title>NutriBliss - Premium Dry Fruits</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -14,28 +14,51 @@
         body {
             font-family: Arial, sans-serif;
             background: #fffaf2;
-            color: #333;
+            color: #2b2b2b;
+        }
+
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1b5e20;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 10px;
+            display: none;
+            z-index: 999;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
 
         .navbar {
-            background: #2e7d32;
+            background: #1b5e20;
             color: white;
-            padding: 18px 40px;
+            padding: 18px 50px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
 
-        .navbar h2 {
-            font-size: 26px;
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .logo span {
+            color: #ffb74d;
         }
 
         .nav-links {
             display: flex;
-            gap: 20px;
+            gap: 22px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .nav-links a {
@@ -44,86 +67,199 @@
             font-weight: bold;
         }
 
+        .cart-link {
+            background: #ff7f00;
+            padding: 10px 14px;
+            border-radius: 25px;
+        }
+
         .hero {
-            text-align: center;
-            padding: 60px 20px;
-            background: linear-gradient(135deg, #fff3e0, #e8f5e9);
+            min-height: 470px;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            align-items: center;
+            gap: 30px;
+            padding: 70px 8%;
+            background: linear-gradient(135deg, #fff3df, #e7f5e8);
         }
 
-        .hero h1 {
-            font-size: 42px;
-            color: #2e7d32;
-            margin-bottom: 15px;
+        .hero-content h1 {
+            font-size: 52px;
+            color: #1b5e20;
+            line-height: 1.1;
+            margin-bottom: 18px;
         }
 
-        .hero p {
-            font-size: 18px;
+        .hero-content p {
+            font-size: 19px;
             color: #555;
+            margin-bottom: 25px;
+            max-width: 560px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .primary-btn,
+        .secondary-btn {
+            padding: 14px 22px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .primary-btn {
+            background: #ff7f00;
+            color: white;
+        }
+
+        .secondary-btn {
+            background: white;
+            color: #1b5e20;
+            border: 2px solid #1b5e20;
+        }
+
+        .hero-card {
+            background: white;
+            padding: 28px;
+            border-radius: 28px;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.15);
+            text-align: center;
+        }
+
+        .hero-card img {
+            width: 100%;
+            max-height: 280px;
+            object-fit: contain;
+            border-radius: 20px;
+            background: #fff8ec;
+        }
+
+        .hero-card h3 {
+            margin-top: 18px;
+            color: #1b5e20;
+            font-size: 24px;
+        }
+
+        .trust-section {
+            max-width: 1100px;
+            margin: -35px auto 40px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .trust-card {
+            background: white;
+            padding: 22px;
+            border-radius: 18px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .trust-card h3 {
+            color: #1b5e20;
+            margin-bottom: 8px;
         }
 
         .container {
             max-width: 1200px;
             margin: auto;
-            padding: 40px 20px;
+            padding: 30px 20px 60px;
         }
 
         .section-title {
             text-align: center;
-            color: #2e7d32;
-            margin-bottom: 30px;
-            font-size: 32px;
+            color: #1b5e20;
+            margin-bottom: 10px;
+            font-size: 36px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 35px;
+            font-size: 17px;
         }
 
         .products {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 28px;
         }
 
         .card {
             background: white;
             padding: 18px;
-            border-radius: 18px;
+            border-radius: 24px;
             text-align: center;
-            box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.1);
             transition: 0.3s;
             border: 1px solid #f1e5d0;
+            position: relative;
+            overflow: hidden;
         }
 
         .card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+            box-shadow: 0 16px 35px rgba(0,0,0,0.16);
+        }
+
+        .badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #1b5e20;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
         .card img {
             width: 100%;
-            height: 180px;
+            height: 190px;
             object-fit: contain;
-            border-radius: 14px;
+            border-radius: 18px;
             background: #fff8ed;
             margin-bottom: 15px;
+            padding: 10px;
         }
 
         .card h3 {
-            font-size: 20px;
-            color: #333;
+            font-size: 21px;
+            color: #2b2b2b;
+            margin-bottom: 8px;
+        }
+
+        .fresh {
+            font-size: 14px;
+            color: #777;
             margin-bottom: 8px;
         }
 
         .price {
             color: #ff7f00;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
         }
 
         .buy-btn {
             width: 100%;
-            padding: 12px;
+            padding: 13px;
             background: #ff7f00;
             border: none;
             color: white;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 15px;
             font-weight: bold;
@@ -134,39 +270,54 @@
             background: #e56f00;
         }
 
-        .message {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #2e7d32;
-            color: white;
-            padding: 12px 18px;
-            border-radius: 8px;
-            display: none;
-            z-index: 999;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
         .empty {
             text-align: center;
             font-size: 18px;
             color: #777;
+            grid-column: 1 / -1;
         }
 
-        @media (max-width: 600px) {
-            .navbar {
-                padding: 16px 20px;
+        .footer {
+            background: #1b5e20;
+            color: white;
+            text-align: center;
+            padding: 25px 15px;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 800px) {
+            .hero {
+                grid-template-columns: 1fr;
                 text-align: center;
-                justify-content: center;
-                gap: 12px;
+                padding: 50px 22px;
             }
 
-            .hero h1 {
-                font-size: 32px;
+            .hero-content h1 {
+                font-size: 38px;
+            }
+
+            .hero-content p {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .hero-buttons {
+                justify-content: center;
+            }
+
+            .navbar {
+                padding: 16px 20px;
+                justify-content: center;
+                gap: 14px;
+                text-align: center;
             }
 
             .nav-links {
                 justify-content: center;
+                gap: 14px;
             }
         }
     </style>
@@ -174,107 +325,146 @@
 
 <body>
 
-    <div class="message" id="message">Added to cart ✅</div>
+<div class="message" id="message">Added to cart ✅</div>
 
-    <!-- Navbar -->
-    <div class="navbar">
-        <h2>NutriBliss</h2>
-        <div class="nav-links">
-            <a href="index.html">Home</a>
-            <a href="#products">Products</a>
-            <a href="track-order.html">Track Order</a>
-            <a href="cart.html">Cart (<span id="cart-count">0</span>)</a>
+<div class="navbar">
+    <div class="logo">Nutri<span>Bliss</span></div>
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="#products">Products</a>
+        <a href="track-order.html">Track Order</a>
+        <a class="cart-link" href="cart.html">Cart (<span id="cart-count">0</span>)</a>
+    </div>
+</div>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Premium Dry Fruits for a Healthier Lifestyle</h1>
+        <p>Fresh, handpicked and quality-packed dry fruits delivered with care. Perfect for daily nutrition, gifting and healthy snacking.</p>
+
+        <div class="hero-buttons">
+            <a href="#products" class="primary-btn">Shop Now</a>
+            <a href="track-order.html" class="secondary-btn">Track Order</a>
         </div>
     </div>
 
-    <!-- Hero -->
-    <section class="hero">
-        <h1>Premium Dry Fruits</h1>
-        <p>Fresh, healthy and handpicked dry fruits delivered to your doorstep.</p>
-    </section>
+    <div class="hero-card">
+        <img src="https://images.unsplash.com/photo-1607877742574-a151d0522ffb?auto=format&fit=crop&w=900&q=80" alt="Premium dry fruits">
+        <h3>Fresh • Crunchy • Nutritious</h3>
+    </div>
+</section>
 
-    <!-- Products -->
-    <div class="container" id="products">
-        <h2 class="section-title">Our Products</h2>
-
-        <div class="products" id="product-list"></div>
+<section class="trust-section">
+    <div class="trust-card">
+        <h3>Premium Quality</h3>
+        <p>Carefully selected dry fruits.</p>
     </div>
 
-    <script>
-        const API_URL = "https://nutribliss-backend-3.onrender.com";
+    <div class="trust-card">
+        <h3>Healthy Snacking</h3>
+        <p>Perfect for daily nutrition.</p>
+    </div>
 
-        updateCartCount();
+    <div class="trust-card">
+        <h3>Fast Delivery</h3>
+        <p>Delivered fresh to your doorstep.</p>
+    </div>
 
-        fetch(`${API_URL}/products`)
-            .then(res => res.json())
-            .then(data => {
-                const productList = document.getElementById("product-list");
+    <div class="trust-card">
+        <h3>Secure Payment</h3>
+        <p>Easy payment with Razorpay.</p>
+    </div>
+</section>
 
-                if (!data || data.length === 0) {
-                    productList.innerHTML = `<p class="empty">No products available right now.</p>`;
-                    return;
-                }
+<div class="container" id="products">
+    <h2 class="section-title">Our Premium Collection</h2>
+    <p class="section-subtitle">Choose from our fresh and healthy dry fruit range.</p>
 
-                data.forEach(product => {
-                    const div = document.createElement("div");
-                    div.className = "card";
+    <div class="products" id="product-list"></div>
+</div>
 
-                    div.innerHTML = `
-                        <img src="${product.image || 'https://via.placeholder.com/200'}" alt="${product.name}">
-                        <h3>${product.name}</h3>
-                        <p class="price">₹${product.price}/kg</p>
-                        <button class="buy-btn">Add to Cart</button>
-                    `;
+<div class="footer">
+    <p><strong>NutriBliss</strong></p>
+    <p>Premium dry fruits for everyday health.</p>
+</div>
 
-                    div.querySelector(".buy-btn").addEventListener("click", () => {
-                        addToCart(product);
-                    });
+<script>
+const API_URL = "https://nutribliss-backend-3.onrender.com";
 
-                    productList.appendChild(div);
-                });
-            })
-            .catch(error => {
-                document.getElementById("product-list").innerHTML =
-                    `<p class="empty">Failed to load products. Please try again later.</p>`;
+updateCartCount();
+
+fetch(`${API_URL}/products`)
+    .then(res => res.json())
+    .then(data => {
+        const productList = document.getElementById("product-list");
+
+        if (!data || data.length === 0) {
+            productList.innerHTML = `<p class="empty">No products available right now.</p>`;
+            return;
+        }
+
+        data.forEach((product, index) => {
+            const div = document.createElement("div");
+            div.className = "card";
+
+            div.innerHTML = `
+                ${index < 2 ? `<div class="badge">Best Seller</div>` : `<div class="badge">Premium</div>`}
+                <img src="${product.image || 'https://via.placeholder.com/200'}" alt="${product.name}">
+                <h3>${product.name}</h3>
+                <p class="fresh">Fresh packed • Quality assured</p>
+                <p class="price">₹${product.price}/kg</p>
+                <button class="buy-btn">Add to Cart</button>
+            `;
+
+            div.querySelector(".buy-btn").addEventListener("click", () => {
+                addToCart(product);
             });
 
-        function updateCartCount() {
-            const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById("cart-count").innerText = totalItems;
-        }
+            productList.appendChild(div);
+        });
+    })
+    .catch(error => {
+        document.getElementById("product-list").innerHTML =
+            `<p class="empty">Failed to load products. Please try again later.</p>`;
+    });
 
-        function addToCart(product) {
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+function updateCartCount() {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    document.getElementById("cart-count").innerText = totalItems;
+}
 
-            let existing = cart.find(item => item.name === product.name);
+function addToCart(product) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-            if (existing) {
-                existing.quantity += 1;
-            } else {
-                cart.push({
-                    id: product._id || Date.now(),
-                    name: product.name,
-                    price: product.price,
-                    image: product.image,
-                    quantity: 1
-                });
-            }
+    let existing = cart.find(item => item.name === product.name);
 
-            localStorage.setItem("cart", JSON.stringify(cart));
-            updateCartCount();
-            showMessage();
-        }
+    if (existing) {
+        existing.quantity += 1;
+    } else {
+        cart.push({
+            id: product._id || Date.now(),
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            quantity: 1
+        });
+    }
 
-        function showMessage() {
-            const message = document.getElementById("message");
-            message.style.display = "block";
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartCount();
+    showMessage();
+}
 
-            setTimeout(() => {
-                message.style.display = "none";
-            }, 1800);
-        }
-    </script>
+function showMessage() {
+    const message = document.getElementById("message");
+    message.style.display = "block";
+
+    setTimeout(() => {
+        message.style.display = "none";
+    }, 1800);
+}
+</script>
 
 </body>
 </html>
