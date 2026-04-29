@@ -95,7 +95,8 @@
             margin-top: 10px;
         }
 
-        .status-badge {
+        .status-badge,
+        .payment-badge {
             padding: 5px 10px;
             border-radius: 8px;
             color: white;
@@ -108,6 +109,14 @@
         .status-shipped { background: #7b1fa2; }
         .status-delivered { background: #2e7d32; }
         .status-cancelled { background: #d32f2f; }
+
+        .payment-cod {
+            background: #6d4c41;
+        }
+
+        .payment-online {
+            background: #1565c0;
+        }
 
         select {
             padding: 8px;
@@ -202,6 +211,10 @@ function getStatusClass(status) {
     return "status-pending";
 }
 
+function isCOD(order) {
+    return order.paymentId === "COD";
+}
+
 async function loadOrders() {
     const ordersList = document.getElementById("orders-list");
     ordersList.innerHTML = "Loading orders...";
@@ -270,6 +283,9 @@ function renderOrders() {
             itemsHtml = "<p>No items found</p>";
         }
 
+        const paymentMethod = isCOD(order) ? "Cash on Delivery" : "Online Payment";
+        const paymentClass = isCOD(order) ? "payment-cod" : "payment-online";
+
         const div = document.createElement("div");
         div.className = "order-card";
 
@@ -278,7 +294,16 @@ function renderOrders() {
             <p><strong>Phone:</strong> ${order.phone}</p>
             <p><strong>Address:</strong> ${order.address}</p>
             <p><strong>Total:</strong> ₹${order.total}</p>
-            <p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>
+
+            <p>
+                <strong>Payment Method:</strong>
+                <span class="payment-badge ${paymentClass}">
+                    ${paymentMethod}
+                </span>
+            </p>
+
+            ${!isCOD(order) ? `<p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>` : ""}
+
             <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
             <p>
                 <strong>Status:</strong>
