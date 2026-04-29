@@ -103,7 +103,7 @@
         <input id="phone" placeholder="Phone Number">
         <textarea id="address" placeholder="Full Delivery Address"></textarea>
 
-        <button onclick="placeOrder()">Pay & Place Order</button>
+        <button id="pay-btn" onclick="placeOrder()">Pay & Place Order</button>
         <button class="back-btn" onclick="goBack()">Back to Cart</button>
     </div>
 
@@ -117,7 +117,9 @@
 
 <script>
 const API_URL = "https://nutribliss-backend-4.onrender.com";
-const RAZORPAY_KEY = "rzp_test_SdHJXu7iVmjrLs";
+
+// IMPORTANT: This key must match the same Razorpay account as your backend secret in Render
+const RAZORPAY_KEY = "rzp_test_SjIBUI0g0xVx3p";
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
@@ -134,12 +136,12 @@ function loadOrder() {
     }
 
     cart.forEach(item => {
-        total += item.price * item.quantity;
+        total += Number(item.price) * Number(item.quantity);
 
         list.innerHTML += `
             <div class="item">
                 <strong>${item.name}</strong><br>
-                ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}
+                ₹${item.price} × ${item.quantity} = ₹${Number(item.price) * Number(item.quantity)}
             </div>
         `;
     });
@@ -148,6 +150,8 @@ function loadOrder() {
 }
 
 async function placeOrder() {
+    const payBtn = document.getElementById("pay-btn");
+
     const name = document.getElementById("name").value.trim();
     const address = document.getElementById("address").value.trim();
     const phone = document.getElementById("phone").value.trim();
@@ -167,10 +171,18 @@ async function placeOrder() {
         return;
     }
 
+    if (!window.Razorpay) {
+        alert("Razorpay failed to load. Please refresh and try again.");
+        return;
+    }
+
     let total = 0;
     cart.forEach(item => {
-        total += item.price * item.quantity;
+        total += Number(item.price) * Number(item.quantity);
     });
+
+    payBtn.disabled = true;
+    payBtn.innerText = "Creating payment...";
 
     let order;
 
@@ -184,14 +196,21 @@ async function placeOrder() {
         });
 
         order = await res.json();
+        console.log("Razorpay order:", order);
 
-        if (!res.ok) {
-            alert("Could not create payment order");
+        if (!res.ok || !order.id) {
+            console.error("Create order error:", order);
+            alert(order.error || "Could not create payment order");
+            payBtn.disabled = false;
+            payBtn.innerText = "Pay & Place Order";
             return;
         }
 
     } catch (err) {
+        console.error("Server error:", err);
         alert("Server error. Payment failed ❌");
+        payBtn.disabled = false;
+        payBtn.innerText = "Pay & Place Order";
         return;
     }
 
@@ -213,9 +232,8 @@ async function placeOrder() {
         },
 
         handler: async function (response) {
-
             try {
-                await fetch(`${API_URL}/save-order`, {
+                const saveRes = await fetch(`${API_URL}/save-order`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -230,12 +248,24 @@ async function placeOrder() {
                     })
                 });
 
-                // ✅ REDIRECT TO SUCCESS PAGE
+                if (!saveRes.ok) {
+                    alert("Payment done, but order saving failed. Please contact support.");
+                    return;
+                }
+
                 localStorage.removeItem("cart");
                 window.location.href = `success.html?phone=${phone}`;
 
             } catch (error) {
+                console.error("Save order error:", error);
                 alert("Payment done, but order saving failed. Please contact support.");
+            }
+        },
+
+        modal: {
+            ondismiss: function () {
+                payBtn.disabled = false;
+                payBtn.innerText = "Pay & Place Order";
             }
         }
     };
