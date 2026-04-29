@@ -124,115 +124,120 @@
 </div>
 
 <script>
-const BASE_URL = "https://nutribliss-backend-3.onrender.com";
-
-window.onload = loadOrders;
-
-async function loadOrders() {
-    const ordersList = document.getElementById("orders-list");
-    ordersList.innerHTML = "Loading orders...";
-
-    try {
-        const res = await fetch(`${BASE_URL}/orders`);
-
-        if (!res.ok) {
-            throw new Error("Failed to fetch orders");
-        }
-
-        const orders = await res.json();
-
-        ordersList.innerHTML = "";
-
-        if (!orders || orders.length === 0) {
-            ordersList.innerHTML = `<p class="empty">No orders found</p>`;
-            return;
-        }
-
-        orders.forEach(order => {
-            let itemsHtml = "";
-
-            if (order.items && order.items.length > 0) {
-                order.items.forEach(item => {
-                    itemsHtml += `
-                        <p>
-                            <strong>${item.name}</strong> -
-                            ₹${item.price} × ${item.quantity}
-                        </p>
-                    `;
-                });
-            } else {
-                itemsHtml = "<p>No items found</p>";
+    const BASE_URL = "https://nutribliss-backend-4.onrender.com";
+    
+    const token = localStorage.getItem("adminToken");
+    
+    window.onload = loadOrders;
+    
+    // ================= LOAD ORDERS =================
+    async function loadOrders() {
+        const ordersList = document.getElementById("orders-list");
+        ordersList.innerHTML = "Loading orders...";
+    
+        try {
+            const res = await fetch(`${BASE_URL}/orders`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+    
+            if (!res.ok) throw new Error();
+    
+            const orders = await res.json();
+    
+            ordersList.innerHTML = "";
+    
+            if (!orders || orders.length === 0) {
+                ordersList.innerHTML = `<p class="empty">No orders found</p>`;
+                return;
             }
-
-            const div = document.createElement("div");
-            div.className = "order-card";
-
-            div.innerHTML = `
-                <p><strong>Customer:</strong> ${order.name}</p>
-                <p><strong>Phone:</strong> ${order.phone}</p>
-                <p><strong>Address:</strong> ${order.address}</p>
-                <p><strong>Total:</strong> ₹${order.total}</p>
-                <p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>
-                <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
-                <p><strong>Status:</strong> ${order.status}</p>
-
-                <div class="items">
-                    <strong>Items:</strong>
-                    ${itemsHtml}
-                </div>
-
-                <select id="status-${order._id}">
-                    <option value="Pending" ${order.status === "Pending" ? "selected" : ""}>Pending</option>
-                    <option value="Processing" ${order.status === "Processing" ? "selected" : ""}>Processing</option>
-                    <option value="Shipped" ${order.status === "Shipped" ? "selected" : ""}>Shipped</option>
-                    <option value="Delivered" ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
-                    <option value="Cancelled" ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
-                </select>
-
-                <button class="update-btn" onclick="updateStatus('${order._id}')">
-                    Update Status
-                </button>
-            `;
-
-            ordersList.appendChild(div);
-        });
-
-    } catch (err) {
-        console.error("Orders error:", err);
-        ordersList.innerHTML = `<p style="color:red;">Failed to load orders</p>`;
-    }
-}
-
-async function updateStatus(orderId) {
-    const status = document.getElementById(`status-${orderId}`).value;
-
-    try {
-        const res = await fetch(`${BASE_URL}/orders/${orderId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ status })
-        });
-
-        if (!res.ok) {
-            throw new Error("Failed to update status");
+    
+            orders.forEach(order => {
+                let itemsHtml = "";
+    
+                if (order.items && order.items.length > 0) {
+                    order.items.forEach(item => {
+                        itemsHtml += `
+                            <p>
+                                <strong>${item.name}</strong> -
+                                ₹${item.price} × ${item.quantity}
+                            </p>
+                        `;
+                    });
+                } else {
+                    itemsHtml = "<p>No items found</p>";
+                }
+    
+                const div = document.createElement("div");
+                div.className = "order-card";
+    
+                div.innerHTML = `
+                    <p><strong>Customer:</strong> ${order.name}</p>
+                    <p><strong>Phone:</strong> ${order.phone}</p>
+                    <p><strong>Address:</strong> ${order.address}</p>
+                    <p><strong>Total:</strong> ₹${order.total}</p>
+                    <p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>
+                    <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+                    <p><strong>Status:</strong> ${order.status}</p>
+    
+                    <div class="items">
+                        <strong>Items:</strong>
+                        ${itemsHtml}
+                    </div>
+    
+                    <select id="status-${order._id}">
+                        <option value="Pending" ${order.status === "Pending" ? "selected" : ""}>Pending</option>
+                        <option value="Processing" ${order.status === "Processing" ? "selected" : ""}>Processing</option>
+                        <option value="Shipped" ${order.status === "Shipped" ? "selected" : ""}>Shipped</option>
+                        <option value="Delivered" ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
+                        <option value="Cancelled" ${order.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
+                    </select>
+    
+                    <button class="update-btn" onclick="updateStatus('${order._id}')">
+                        Update Status
+                    </button>
+                `;
+    
+                ordersList.appendChild(div);
+            });
+    
+        } catch (err) {
+            console.error("Orders error:", err);
+            ordersList.innerHTML = `<p style="color:red;">Failed to load orders</p>`;
         }
-
-        alert("Order status updated ✅");
-        loadOrders();
-
-    } catch (err) {
-        console.error("Update status error:", err);
-        alert("Failed to update order status ❌");
     }
-}
-
-function logout() {
-    localStorage.removeItem("adminToken");
-    window.location.href = "admin-login.html";
-}
-</script>
+    
+    // ================= UPDATE STATUS =================
+    async function updateStatus(orderId) {
+        const status = document.getElementById(`status-${orderId}`).value;
+    
+        try {
+            const res = await fetch(`${BASE_URL}/orders/${orderId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ status })
+            });
+    
+            if (!res.ok) throw new Error();
+    
+            alert("Order status updated ✅");
+            loadOrders();
+    
+        } catch (err) {
+            alert("Failed to update order status ❌");
+        }
+    }
+    
+    // ================= LOGOUT =================
+    function logout() {
+        localStorage.removeItem("adminToken");
+        window.location.href = "admin-login.html";
+    }
+    </script>
 
 </body>
 </html>
