@@ -116,7 +116,7 @@
 </div>
 
 <script>
-const API_URL = "https://nutribliss-backend-3.onrender.com";
+const API_URL = "https://nutribliss-backend-4.onrender.com";
 const RAZORPAY_KEY = "rzp_test_SdHJXu7iVmjrLs";
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -213,6 +213,7 @@ async function placeOrder() {
         },
 
         handler: async function (response) {
+
             try {
                 await fetch(`${API_URL}/save-order`, {
                     method: "POST",
@@ -229,10 +230,9 @@ async function placeOrder() {
                     })
                 });
 
-                alert("Payment Successful 🎉 Order placed successfully.");
-
+                // ✅ REDIRECT TO SUCCESS PAGE
                 localStorage.removeItem("cart");
-                window.location.href = "track-order.html";
+                window.location.href = `success.html?phone=${phone}`;
 
             } catch (error) {
                 alert("Payment done, but order saving failed. Please contact support.");
