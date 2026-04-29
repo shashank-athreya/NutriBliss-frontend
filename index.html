@@ -47,7 +47,6 @@
         .logo {
             font-size: 28px;
             font-weight: bold;
-            letter-spacing: 0.5px;
         }
 
         .logo span {
@@ -74,7 +73,7 @@
         }
 
         .hero {
-            min-height: 470px;
+            min-height: 500px;
             display: grid;
             grid-template-columns: 1.1fr 0.9fr;
             align-items: center;
@@ -169,10 +168,10 @@
             margin-bottom: 8px;
         }
 
-        .container {
+        .section {
             max-width: 1200px;
             margin: auto;
-            padding: 30px 20px 60px;
+            padding: 50px 20px;
         }
 
         .section-title {
@@ -187,6 +186,22 @@
             color: #666;
             margin-bottom: 35px;
             font-size: 17px;
+        }
+
+        .about-box {
+            background: white;
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .about-box p {
+            font-size: 18px;
+            color: #555;
+            line-height: 1.7;
         }
 
         .products {
@@ -236,7 +251,6 @@
 
         .card h3 {
             font-size: 21px;
-            color: #2b2b2b;
             margin-bottom: 8px;
         }
 
@@ -263,11 +277,29 @@
             cursor: pointer;
             font-size: 15px;
             font-weight: bold;
-            transition: 0.3s;
         }
 
         .buy-btn:hover {
             background: #e56f00;
+        }
+
+        .why-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 22px;
+        }
+
+        .why-card {
+            background: white;
+            padding: 24px;
+            border-radius: 20px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.09);
+            text-align: center;
+        }
+
+        .why-card h3 {
+            color: #1b5e20;
+            margin-bottom: 10px;
         }
 
         .empty {
@@ -277,15 +309,33 @@
             grid-column: 1 / -1;
         }
 
+        .whatsapp-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: #25d366;
+            color: white;
+            padding: 14px 18px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            z-index: 999;
+        }
+
         .footer {
             background: #1b5e20;
             color: white;
+            padding: 35px 20px;
             text-align: center;
-            padding: 25px 15px;
+        }
+
+        .footer h2 span {
+            color: #ffb74d;
         }
 
         .footer p {
-            margin: 5px 0;
+            margin: 8px 0;
         }
 
         @media (max-width: 800px) {
@@ -332,6 +382,7 @@
     <div class="nav-links">
         <a href="index.html">Home</a>
         <a href="#products">Products</a>
+        <a href="#about">About</a>
         <a href="track-order.html">Track Order</a>
         <a class="cart-link" href="cart.html">Cart (<span id="cart-count">0</span>)</a>
     </div>
@@ -376,20 +427,66 @@
     </div>
 </section>
 
-<div class="container" id="products">
+<section class="section" id="about">
+    <h2 class="section-title">About NutriBliss</h2>
+    <p class="section-subtitle">Freshness, quality and health in every pack.</p>
+
+    <div class="about-box">
+        <p>
+            NutriBliss brings you premium quality dry fruits selected for freshness, taste and nutrition.
+            Our goal is to make healthy snacking simple, tasty and trustworthy for every home.
+        </p>
+    </div>
+</section>
+
+<section class="section" id="products">
     <h2 class="section-title">Our Premium Collection</h2>
     <p class="section-subtitle">Choose from our fresh and healthy dry fruit range.</p>
 
     <div class="products" id="product-list"></div>
-</div>
+</section>
+
+<section class="section">
+    <h2 class="section-title">Why Choose NutriBliss?</h2>
+    <p class="section-subtitle">Built for customers who care about quality.</p>
+
+    <div class="why-grid">
+        <div class="why-card">
+            <h3>Quality Checked</h3>
+            <p>Every product is selected with care.</p>
+        </div>
+
+        <div class="why-card">
+            <h3>Fresh Packing</h3>
+            <p>Packed to preserve crunch and taste.</p>
+        </div>
+
+        <div class="why-card">
+            <h3>Easy Tracking</h3>
+            <p>Track your order anytime with phone number.</p>
+        </div>
+
+        <div class="why-card">
+            <h3>Secure Checkout</h3>
+            <p>Safe online payment through Razorpay.</p>
+        </div>
+    </div>
+</section>
+
+<a href="#" class="whatsapp-btn" id="whatsapp-link">WhatsApp Us</a>
 
 <div class="footer">
-    <p><strong>NutriBliss</strong></p>
+    <h2>Nutri<span>Bliss</span></h2>
     <p>Premium dry fruits for everyday health.</p>
+    <p>Fresh • Healthy • Quality Packed</p>
 </div>
 
 <script>
-const API_URL = "https://nutribliss-backend-3.onrender.com";
+const API_URL = "https://nutribliss-backend-4.onrender.com";
+const WHATSAPP_NUMBER = "+918277148677";
+
+document.getElementById("whatsapp-link").href =
+    `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20NutriBliss,%20I%20need%20help%20with%20an%20order`;
 
 updateCartCount();
 
