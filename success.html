@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <title>Checkout - NutriBliss</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fffaf2;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .box {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+        }
+
+        h2, h3 {
+            color: #2e7d32;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 13px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        textarea {
+            height: 90px;
+            resize: none;
+        }
+
+        .item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+
+        .total {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ff7f00;
+            margin-top: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #ff7f00;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .back-btn {
+            background: #2e7d32;
+        }
+
+        .empty {
+            text-align: center;
+            color: #777;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<h2 style="text-align:center;">Checkout 🧾</h2>
+
+<div class="container">
+
+    <div class="box">
+        <h3>Customer Details</h3>
+
+        <input id="name" placeholder="Your Name">
+        <input id="phone" placeholder="Phone Number">
+        <textarea id="address" placeholder="Full Delivery Address"></textarea>
+
+        <button onclick="placeOrder()">Pay & Place Order</button>
+        <button class="back-btn" onclick="goBack()">Back to Cart</button>
+    </div>
+
+    <div class="box">
+        <h3>Order Summary</h3>
+        <div id="order-items"></div>
+        <div class="total" id="total">Total: ₹0</div>
+    </div>
+
+</div>
+
+<script>
+const API_URL = "https://nutribliss-backend-3.onrender.com";
+const RAZORPAY_KEY = "rzp_test_SdHJXu7iVmjrLs";
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+function loadOrder() {
+    const list = document.getElementById("order-items");
+    let total = 0;
+
+    list.innerHTML = "";
+
+    if (cart.length === 0) {
+        list.innerHTML = `<p class="empty">Your cart is empty</p>`;
+        document.getElementById("total").innerText = "Total: ₹0";
+        return;
+    }
+
+    cart.forEach(item => {
+        total += item.price * item.quantity;
+
+        list.innerHTML += `
+            <div class="item">
+                <strong>${item.name}</strong><br>
+                ₹${item.price} × ${item.quantity} = ₹${item.price * item.quantity}
+            </div>
+        `;
+    });
+
+    document.getElementById("total").innerText = "Total: ₹" + total;
+}
+
+async function placeOrder() {
+    const name = document.getElementById("name").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (cart.length === 0) {
+        alert("Your cart is empty");
+        return;
+    }
+
+    if (!name || !address || !phone) {
+        alert("Please fill all details");
+        return;
+    }
+
+    if (phone.length < 10) {
+        alert("Please enter a valid phone number");
+        return;
+    }
+
+    let total = 0;
+    cart.forEach(item => {
+        total += item.price * item.quantity;
+    });
+
+    let order;
+
+    try {
+        const res = await fetch(`${API_URL}/create-order`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ amount: total })
+        });
+
+        order = await res.json();
+
+        if (!res.ok) {
+            alert("Could not create payment order");
+            return;
+        }
+
+    } catch (err) {
+        alert("Server error. Payment failed ❌");
+        return;
+    }
+
+    const options = {
+        key: RAZORPAY_KEY,
+        amount: order.amount,
+        currency: "INR",
+        name: "NutriBliss",
+        description: "Dry Fruits Purchase",
+        order_id: order.id,
+
+        prefill: {
+            name: name,
+            contact: phone
+        },
+
+        theme: {
+            color: "#ff7f00"
+        },
+
+        handler: async function (response) {
+            try {
+                await fetch(`${API_URL}/save-order`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name,
+                        address,
+                        phone,
+                        cart,
+                        total,
+                        paymentId: response.razorpay_payment_id
+                    })
+                });
+
+                alert("Payment Successful 🎉 Order placed successfully.");
+
+                localStorage.removeItem("cart");
+                window.location.href = "track-order.html";
+
+            } catch (error) {
+                alert("Payment done, but order saving failed. Please contact support.");
+            }
+        }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+}
+
+function goBack() {
+    window.location.href = "cart.html";
+}
+
+loadOrder();
+</script>
+
+</body>
+</html>
