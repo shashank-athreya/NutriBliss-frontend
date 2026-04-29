@@ -224,170 +224,194 @@
 </div>
 
 <script>
-    const BASE_URL = "https://nutribliss-backend-4.onrender.com";
-    
-    const token = localStorage.getItem("adminToken");
-    
-    window.onload = function () {
-        loadProducts();
-        loadAnalytics();
-    };
-    
-    // ================= ANALYTICS =================
-    async function loadAnalytics() {
-        try {
-            const res = await fetch(`${BASE_URL}/orders`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-    
-            const orders = await res.json();
-    
-            let totalRevenue = 0;
-            let pendingOrders = 0;
-    
-            orders.forEach(order => {
-                totalRevenue += Number(order.total) || 0;
-    
-                if (order.status === "Pending") {
-                    pendingOrders++;
-                }
-            });
-    
-            document.getElementById("total-revenue").innerText = "₹" + totalRevenue;
-            document.getElementById("total-orders").innerText = orders.length;
-            document.getElementById("pending-orders").innerText = pendingOrders;
-    
-        } catch (err) {
-            console.error("Analytics error:", err);
-        }
+const BASE_URL = "https://nutribliss-backend-4.onrender.com";
+const token = localStorage.getItem("adminToken");
+
+window.onload = function () {
+    loadProducts();
+    loadAnalytics();
+};
+
+function handleAuthError(res) {
+    if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem("adminToken");
+        alert("Session expired. Please login again.");
+        window.location.href = "admin-login.html";
+        return true;
     }
-    
-    // ================= ADD PRODUCT =================
-    async function addProduct() {
-        const name = document.getElementById("name").value.trim();
-        const price = document.getElementById("price").value.trim();
-        const image = document.getElementById("image").value.trim();
-    
-        if (!name || !price) {
-            alert("Name and price are required");
+    return false;
+}
+
+async function loadAnalytics() {
+    try {
+        const res = await fetch(`${BASE_URL}/orders`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (handleAuthError(res)) return;
+
+        const orders = await res.json();
+
+        let totalRevenue = 0;
+        let pendingOrders = 0;
+
+        orders.forEach(order => {
+            totalRevenue += Number(order.total) || 0;
+
+            if (order.status === "Pending") {
+                pendingOrders++;
+            }
+        });
+
+        document.getElementById("total-revenue").innerText = "₹" + totalRevenue;
+        document.getElementById("total-orders").innerText = orders.length;
+        document.getElementById("pending-orders").innerText = pendingOrders;
+
+    } catch (err) {
+        console.error("Analytics error:", err);
+    }
+}
+
+async function addProduct() {
+    const name = document.getElementById("name").value.trim();
+    const price = document.getElementById("price").value.trim();
+    const image = document.getElementById("image").value.trim();
+
+    if (!name || !price) {
+        alert("Name and price are required");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${BASE_URL}/products`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, price, image })
+        });
+
+        if (handleAuthError(res)) return;
+
+        if (!res.ok) {
+            throw new Error("Failed to add product");
+        }
+
+        alert("Product added successfully 🚀");
+
+        document.getElementById("name").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("image").value = "";
+
+        loadProducts();
+    } catch (err) {
+        alert("Error adding product ❌");
+    }
+}
+
+async function deleteProduct(id) {
+    if (!confirm("Delete this product?")) return;
+
+    try {
+        const res = await fetch(`${BASE_URL}/products/${id}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (handleAuthError(res)) return;
+
+        loadProducts();
+    } catch (err) {
+        alert("Delete failed ❌");
+    }
+}
+
+async function editProduct(id, name, price, image) {
+    const newName = prompt("New name:", name);
+    const newPrice = prompt("New price:", price);
+    const newImage = prompt("New image URL:", image);
+
+    if (!newName || !newPrice) return;
+
+    try {
+        const res = await fetch(`${BASE_URL}/products/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                name: newName,
+                price: newPrice,
+                image: newImage
+            })
+        });
+
+        if (handleAuthError(res)) return;
+
+        loadProducts();
+    } catch (err) {
+        alert("Edit failed ❌");
+    }
+}
+
+async function loadProducts() {
+    const list = document.getElementById("admin-products");
+    list.innerHTML = "Loading...";
+
+    try {
+        const res = await fetch(`${BASE_URL}/products`);
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch products");
+        }
+
+        const data = await res.json();
+
+        document.getElementById("total-products").innerText = data.length;
+
+        list.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            list.innerHTML = "<li>No products found</li>";
             return;
         }
-    
-        try {
-            const res = await fetch(`${BASE_URL}/products`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({ name, price, image })
-            });
-    
-            if (!res.ok) throw new Error();
-    
-            alert("Product added successfully 🚀");
-    
-            document.getElementById("name").value = "";
-            document.getElementById("price").value = "";
-            document.getElementById("image").value = "";
-    
-            loadProducts();
-        } catch {
-            alert("Error adding product ❌");
-        }
-    }
-    
-    // ================= DELETE =================
-    async function deleteProduct(id) {
-        if (!confirm("Delete this product?")) return;
-    
-        try {
-            await fetch(`${BASE_URL}/products/${id}`, {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-    
-            loadProducts();
-        } catch (err) {
-            console.error(err);
-        }
-    }
-    
-    // ================= EDIT =================
-    async function editProduct(id, name, price, image) {
-        const newName = prompt("New name:", name);
-        const newPrice = prompt("New price:", price);
-        const newImage = prompt("New image URL:", image);
-    
-        if (!newName || !newPrice) return;
-    
-        try {
-            await fetch(`${BASE_URL}/products/${id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    name: newName,
-                    price: newPrice,
-                    image: newImage
-                })
-            });
-    
-            loadProducts();
-        } catch (err) {
-            console.error(err);
-        }
-    }
-    
-    // ================= LOAD PRODUCTS =================
-    async function loadProducts() {
-        const list = document.getElementById("admin-products");
-        list.innerHTML = "Loading...";
-    
-        try {
-            const res = await fetch(`${BASE_URL}/products`);
-    
-            const data = await res.json();
-    
-            document.getElementById("total-products").innerText = data.length;
-    
-            list.innerHTML = "";
-    
-            data.forEach((item) => {
-                const li = document.createElement("li");
-    
-                li.innerHTML = `
-                    <div class="product-info">
-                        ${item.image ? `<img src="${item.image}">` : ""}
-                        <div>
-                            <strong>${item.name}</strong><br>
-                            ₹${item.price}
-                        </div>
+
+        data.forEach((item) => {
+            const li = document.createElement("li");
+
+            li.innerHTML = `
+                <div class="product-info">
+                    ${item.image ? `<img src="${item.image}">` : ""}
+                    <div>
+                        <strong>${item.name}</strong><br>
+                        ₹${item.price}
                     </div>
-    
-                    <div class="actions">
-                        <button class="edit-btn" onclick="editProduct('${item._id}', '${item.name}', '${item.price}', '${item.image || ""}')">Edit</button>
-                        <button class="delete-btn" onclick="deleteProduct('${item._id}')">Delete</button>
-                    </div>
-                `;
-    
-                list.appendChild(li);
-            });
-    
-        } catch {
-            list.innerHTML = "<li style='color:red;'>Failed to load products</li>";
-        }
+                </div>
+
+                <div class="actions">
+                    <button class="edit-btn" onclick="editProduct('${item._id}', '${item.name}', '${item.price}', '${item.image || ""}')">Edit</button>
+                    <button class="delete-btn" onclick="deleteProduct('${item._id}')">Delete</button>
+                </div>
+            `;
+
+            list.appendChild(li);
+        });
+    } catch (err) {
+        list.innerHTML = "<li style='color:red;'>Failed to load products</li>";
     }
-    
-    // ================= LOGOUT =================
-    function logout() {
-        localStorage.removeItem("adminToken");
-        window.location.href = "admin-login.html";
-    }
-    </script>
+}
+
+function logout() {
+    localStorage.removeItem("adminToken");
+    window.location.href = "admin-login.html";
+}
+</script>
+
+</body>
+</html>
