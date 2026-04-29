@@ -70,6 +70,35 @@
             margin-top: 10px;
         }
 
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #fbc02d;
+            color: #333;
+        }
+
+        .status-processing {
+            background: #1976d2;
+        }
+
+        .status-shipped {
+            background: #7b1fa2;
+        }
+
+        .status-delivered {
+            background: #2e7d32;
+        }
+
+        .status-cancelled {
+            background: #d32f2f;
+        }
+
         select {
             padding: 8px;
             border-radius: 6px;
@@ -139,6 +168,15 @@ function handleAuthError(res) {
     return false;
 }
 
+function getStatusClass(status) {
+    if (status === "Pending") return "status-pending";
+    if (status === "Processing") return "status-processing";
+    if (status === "Shipped") return "status-shipped";
+    if (status === "Delivered") return "status-delivered";
+    if (status === "Cancelled") return "status-cancelled";
+    return "status-pending";
+}
+
 async function loadOrders() {
     const ordersList = document.getElementById("orders-list");
     ordersList.innerHTML = "Loading orders...";
@@ -191,7 +229,12 @@ async function loadOrders() {
                 <p><strong>Total:</strong> ₹${order.total}</p>
                 <p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>
                 <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
-                <p><strong>Status:</strong> ${order.status}</p>
+                <p>
+                    <strong>Status:</strong>
+                    <span class="status-badge ${getStatusClass(order.status)}">
+                        ${order.status}
+                    </span>
+                </p>
 
                 <div class="items">
                     <strong>Items:</strong>
