@@ -73,6 +73,10 @@
             margin-top: 15px;
         }
 
+        .cod-btn {
+            background: #6d4c41;
+        }
+
         .back-btn {
             background: #2e7d32;
         }
@@ -80,6 +84,13 @@
         .empty {
             text-align: center;
             color: #777;
+        }
+
+        .note {
+            font-size: 13px;
+            color: #666;
+            margin-top: 8px;
+            line-height: 1.5;
         }
 
         @media (max-width: 700px) {
@@ -103,8 +114,13 @@
         <input id="phone" placeholder="Phone Number">
         <textarea id="address" placeholder="Full Delivery Address"></textarea>
 
-        <button id="pay-btn" onclick="placeOrder()">Pay & Place Order</button>
+        <button id="pay-btn" onclick="placeOrder()">Pay Online</button>
+        <button id="cod-btn" class="cod-btn" onclick="placeCOD()">Cash on Delivery</button>
         <button class="back-btn" onclick="goBack()">Back to Cart</button>
+
+        <p class="note">
+            Online payment uses Razorpay. If online payment is unavailable, you can place your order using Cash on Delivery.
+        </p>
     </div>
 
     <div class="box">
@@ -117,8 +133,6 @@
 
 <script>
 const API_URL = "https://nutribliss-backend-4.onrender.com";
-
-// IMPORTANT: This key must match the same Razorpay account as your backend secret in Render
 const RAZORPAY_KEY = "rzp_test_SjIBUI0g0xVx3p";
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -149,31 +163,24 @@ function loadOrder() {
     document.getElementById("total").innerText = "Total: ₹" + total;
 }
 
-async function placeOrder() {
-    const payBtn = document.getElementById("pay-btn");
-
+function getCustomerDetails() {
     const name = document.getElementById("name").value.trim();
     const address = document.getElementById("address").value.trim();
     const phone = document.getElementById("phone").value.trim();
 
     if (cart.length === 0) {
         alert("Your cart is empty");
-        return;
+        return null;
     }
 
     if (!name || !address || !phone) {
         alert("Please fill all details");
-        return;
+        return null;
     }
 
     if (phone.length < 10) {
         alert("Please enter a valid phone number");
-        return;
-    }
-
-    if (!window.Razorpay) {
-        alert("Razorpay failed to load. Please refresh and try again.");
-        return;
+        return null;
     }
 
     let total = 0;
@@ -181,6 +188,19 @@ async function placeOrder() {
         total += Number(item.price) * Number(item.quantity);
     });
 
+    return { name, address, phone, total };
+}
+
+async function placeOrder() {
+    const details = getCustomerDetails();
+    if (!details) return;
+
+    if (!window.Razorpay) {
+        alert("Razorpay failed to load. Please refresh and try again.");
+        return;
+    }
+
+    const payBtn = document.getElementById("pay-btn");
     payBtn.disabled = true;
     payBtn.innerText = "Creating payment...";
 
@@ -192,25 +212,22 @@ async function placeOrder() {
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ amount: total })
+            body: JSON.stringify({ amount: details.total })
         });
 
         order = await res.json();
-        console.log("Razorpay order:", order);
 
         if (!res.ok || !order.id) {
-            console.error("Create order error:", order);
             alert(order.error || "Could not create payment order");
             payBtn.disabled = false;
-            payBtn.innerText = "Pay & Place Order";
+            payBtn.innerText = "Pay Online";
             return;
         }
 
     } catch (err) {
-        console.error("Server error:", err);
         alert("Server error. Payment failed ❌");
         payBtn.disabled = false;
-        payBtn.innerText = "Pay & Place Order";
+        payBtn.innerText = "Pay Online";
         return;
     }
 
@@ -223,8 +240,8 @@ async function placeOrder() {
         order_id: order.id,
 
         prefill: {
-            name: name,
-            contact: phone
+            name: details.name,
+            contact: details.phone
         },
 
         theme: {
@@ -239,11 +256,11 @@ async function placeOrder() {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        name,
-                        address,
-                        phone,
+                        name: details.name,
+                        address: details.address,
+                        phone: details.phone,
                         cart,
-                        total,
+                        total: details.total,
                         paymentId: response.razorpay_payment_id
                     })
                 });
@@ -254,10 +271,9 @@ async function placeOrder() {
                 }
 
                 localStorage.removeItem("cart");
-                window.location.href = `success.html?phone=${phone}`;
+                window.location.href = `success.html?phone=${details.phone}`;
 
             } catch (error) {
-                console.error("Save order error:", error);
                 alert("Payment done, but order saving failed. Please contact support.");
             }
         },
@@ -265,13 +281,54 @@ async function placeOrder() {
         modal: {
             ondismiss: function () {
                 payBtn.disabled = false;
-                payBtn.innerText = "Pay & Place Order";
+                payBtn.innerText = "Pay Online";
             }
         }
     };
 
     const rzp = new Razorpay(options);
     rzp.open();
+}
+
+async function placeCOD() {
+    const details = getCustomerDetails();
+    if (!details) return;
+
+    const codBtn = document.getElementById("cod-btn");
+    codBtn.disabled = true;
+    codBtn.innerText = "Placing order...";
+
+    try {
+        const res = await fetch(`${API_URL}/save-order`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name: details.name,
+                address: details.address,
+                phone: details.phone,
+                cart,
+                total: details.total,
+                paymentId: "COD"
+            })
+        });
+
+        if (!res.ok) {
+            alert("Order failed ❌");
+            codBtn.disabled = false;
+            codBtn.innerText = "Cash on Delivery";
+            return;
+        }
+
+        localStorage.removeItem("cart");
+        window.location.href = `success.html?phone=${details.phone}`;
+
+    } catch (err) {
+        alert("Order failed ❌");
+        codBtn.disabled = false;
+        codBtn.innerText = "Cash on Delivery";
+    }
 }
 
 function goBack() {
