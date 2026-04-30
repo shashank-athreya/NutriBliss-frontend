@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: Arial, sans-serif;
@@ -17,7 +15,7 @@
     }
 
     .container {
-      max-width: 750px;
+      max-width: 800px;
       margin: auto;
       background: white;
       padding: 28px;
@@ -30,10 +28,6 @@
       text-align: center;
     }
 
-    p {
-      color: #555;
-    }
-
     input {
       width: 100%;
       padding: 13px;
@@ -43,28 +37,27 @@
       font-size: 16px;
     }
 
-    button {
+    button, .home-btn {
       width: 100%;
+      display: block;
       padding: 13px;
+      border-radius: 10px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    button {
       background: #2e7d32;
       color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      font-weight: bold;
     }
 
     .home-btn {
-      display: block;
-      text-align: center;
-      margin-top: 12px;
-      padding: 13px;
       background: #ff7f00;
       color: white;
-      border-radius: 10px;
-      text-decoration: none;
-      font-weight: bold;
     }
 
     .order-card {
@@ -76,12 +69,7 @@
       box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
 
-    .order-card p {
-      margin: 8px 0;
-    }
-
-    .status-badge,
-    .payment-badge {
+    .status-badge, .payment-badge {
       padding: 5px 10px;
       border-radius: 8px;
       color: white;
@@ -89,33 +77,50 @@
       display: inline-block;
     }
 
-    .status-pending {
-      background: #fbc02d;
-      color: #333;
+    .status-pending { background: #fbc02d; color: #333; }
+    .status-processing { background: #1976d2; }
+    .status-shipped { background: #7b1fa2; }
+    .status-delivered { background: #2e7d32; }
+    .status-cancelled { background: #d32f2f; }
+
+    .payment-cod { background: #6d4c41; }
+    .payment-online { background: #1565c0; }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 18px 0;
     }
 
-    .status-processing {
-      background: #1976d2;
+    .step {
+      background: #ddd;
+      padding: 10px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: bold;
+      color: #555;
     }
 
-    .status-shipped {
-      background: #7b1fa2;
-    }
-
-    .status-delivered {
+    .step.done {
       background: #2e7d32;
+      color: white;
     }
 
-    .status-cancelled {
-      background: #d32f2f;
+    .step.current {
+      background: #ff7f00;
+      color: white;
     }
 
-    .payment-cod {
-      background: #6d4c41;
-    }
-
-    .payment-online {
-      background: #1565c0;
+    .cancelled-box {
+      background: #ffebee;
+      color: #d32f2f;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin: 15px 0;
+      text-align: center;
     }
 
     .items {
@@ -137,6 +142,12 @@
       margin-top: 15px;
       text-align: center;
       font-weight: bold;
+    }
+
+    @media(max-width: 600px) {
+      .timeline {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -166,6 +177,8 @@ if (phoneFromUrl) {
   trackOrder();
 }
 
+const steps = ["Pending", "Processing", "Shipped", "Delivered"];
+
 function getStatusClass(status) {
   if (status === "Pending") return "status-pending";
   if (status === "Processing") return "status-processing";
@@ -173,6 +186,27 @@ function getStatusClass(status) {
   if (status === "Delivered") return "status-delivered";
   if (status === "Cancelled") return "status-cancelled";
   return "status-pending";
+}
+
+function getTimeline(status) {
+  if (status === "Cancelled") {
+    return `<div class="cancelled-box">Order Cancelled</div>`;
+  }
+
+  const currentIndex = steps.indexOf(status);
+
+  return `
+    <div class="timeline">
+      ${steps.map((step, index) => {
+        let className = "step";
+
+        if (index < currentIndex) className += " done";
+        if (index === currentIndex) className += " current";
+
+        return `<div class="${className}">${step}</div>`;
+      }).join("")}
+    </div>
+  `;
 }
 
 function isCOD(order) {
@@ -241,6 +275,8 @@ async function trackOrder() {
               ${order.status}
             </span>
           </p>
+
+          ${getTimeline(order.status)}
 
           <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
 
