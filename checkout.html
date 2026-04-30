@@ -10,13 +10,20 @@
 
         body {
             font-family: Arial, sans-serif;
-            background: #fffaf2;
+            background: linear-gradient(135deg, #fffaf2, #eef8ee);
             margin: 0;
             padding: 20px;
+            color: #333;
+        }
+
+        .title {
+            text-align: center;
+            color: #1b5e20;
+            margin-bottom: 25px;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -26,29 +33,36 @@
         .box {
             background: white;
             padding: 25px;
-            border-radius: 16px;
-            box-shadow: 0 8px 22px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.1);
         }
 
-        h2, h3 { color: #2e7d32; }
+        h3 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+        }
 
         input, textarea {
             width: 100%;
-            padding: 13px;
+            padding: 14px;
             margin: 10px 0;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 15px;
         }
 
         textarea {
-            height: 90px;
+            height: 100px;
             resize: none;
         }
 
         .item {
             border-bottom: 1px solid #eee;
-            padding: 10px 0;
+            padding: 12px 0;
+        }
+
+        .item strong {
+            color: #1b5e20;
         }
 
         .summary-line {
@@ -59,64 +73,90 @@
         }
 
         .total {
-            font-size: 22px;
+            font-size: 23px;
             font-weight: bold;
             color: #ff7f00;
             margin-top: 15px;
             border-top: 1px solid #eee;
-            padding-top: 12px;
+            padding-top: 14px;
         }
 
         button {
             width: 100%;
             padding: 14px;
-            background: #ff7f00;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 14px;
         }
 
+        button:disabled {
+            background: #999 !important;
+            cursor: not-allowed;
+        }
+
+        .pay-btn { background: #ff7f00; }
         .cod-btn { background: #6d4c41; }
         .back-btn { background: #2e7d32; }
+
+        .note {
+            font-size: 13px;
+            color: #666;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+
+        .secure-box {
+            margin-top: 18px;
+            background: #fffaf2;
+            border-radius: 14px;
+            padding: 14px;
+            border: 1px solid #f1e5d0;
+        }
+
+        .secure-box p {
+            margin: 6px 0;
+            font-size: 14px;
+        }
 
         .empty {
             text-align: center;
             color: #777;
         }
 
-        .note {
-            font-size: 13px;
-            color: #666;
-            margin-top: 8px;
-            line-height: 1.5;
-        }
-
-        @media (max-width: 700px) {
-            .container { grid-template-columns: 1fr; }
+        @media (max-width: 750px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
 
-<h2 style="text-align:center;">Checkout 🧾</h2>
+<h2 class="title">Checkout 🧾</h2>
 
 <div class="container">
 
     <div class="box">
         <h3>Customer Details</h3>
 
-        <input id="name" placeholder="Your Name">
+        <input id="name" placeholder="Full Name">
         <input id="phone" placeholder="Phone Number">
         <textarea id="address" placeholder="Full Delivery Address"></textarea>
 
-        <button id="pay-btn" onclick="placeOrder()">Pay Online</button>
+        <button id="pay-btn" class="pay-btn" onclick="placeOrder()">Pay Online</button>
         <button id="cod-btn" class="cod-btn" onclick="placeCOD()">Cash on Delivery (+₹30)</button>
         <button class="back-btn" onclick="goBack()">Back to Cart</button>
+
+        <div class="secure-box">
+            <p>✅ Online payment through Razorpay</p>
+            <p>✅ Cash on Delivery available</p>
+            <p>✅ Track order using your phone number</p>
+        </div>
 
         <p class="note">
             Online payment has no extra COD charge. Cash on Delivery includes ₹30 handling charge.
@@ -133,12 +173,16 @@
         </div>
 
         <div class="summary-line">
+            <span>Online Payment Total</span>
+            <strong id="online-total">₹0</strong>
+        </div>
+
+        <div class="summary-line">
             <span>COD Charge</span>
             <strong>₹30</strong>
         </div>
 
-        <div class="total" id="total">Online Total: ₹0</div>
-        <p class="note">For COD, final total will be Cart Total + ₹30.</p>
+        <div class="total" id="total">COD Total: ₹0</div>
     </div>
 
 </div>
@@ -151,23 +195,23 @@ const COD_CHARGE = 30;
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 function calculateCartTotal() {
-    let total = 0;
-    cart.forEach(item => {
-        total += Number(item.price) * Number(item.quantity);
-    });
-    return total;
+    return cart.reduce((sum, item) => {
+        return sum + Number(item.price) * Number(item.quantity);
+    }, 0);
 }
 
 function loadOrder() {
     const list = document.getElementById("order-items");
     const cartTotal = calculateCartTotal();
+    const codTotal = cartTotal + COD_CHARGE;
 
     list.innerHTML = "";
 
     if (cart.length === 0) {
         list.innerHTML = `<p class="empty">Your cart is empty</p>`;
         document.getElementById("cart-total").innerText = "₹0";
-        document.getElementById("total").innerText = "Online Total: ₹0";
+        document.getElementById("online-total").innerText = "₹0";
+        document.getElementById("total").innerText = "COD Total: ₹0";
         return;
     }
 
@@ -183,7 +227,8 @@ function loadOrder() {
     });
 
     document.getElementById("cart-total").innerText = "₹" + cartTotal;
-    document.getElementById("total").innerText = "Online Total: ₹" + cartTotal;
+    document.getElementById("online-total").innerText = "₹" + cartTotal;
+    document.getElementById("total").innerText = "COD Total: ₹" + codTotal;
 }
 
 function getCustomerDetails() {
@@ -197,18 +242,21 @@ function getCustomerDetails() {
     }
 
     if (!name || !address || !phone) {
-        alert("Please fill all details");
+        alert("Please fill name, phone and address");
         return null;
     }
 
-    if (phone.length < 10) {
-        alert("Please enter a valid phone number");
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+        alert("Please enter a valid 10-digit Indian phone number");
         return null;
     }
 
-    const cartTotal = calculateCartTotal();
-
-    return { name, address, phone, cartTotal };
+    return {
+        name,
+        address,
+        phone,
+        cartTotal: calculateCartTotal()
+    };
 }
 
 async function placeOrder() {
@@ -224,8 +272,6 @@ async function placeOrder() {
     payBtn.disabled = true;
     payBtn.innerText = "Creating payment...";
 
-    let order;
-
     try {
         const res = await fetch(`${API_URL}/create-order`, {
             method: "POST",
@@ -233,7 +279,7 @@ async function placeOrder() {
             body: JSON.stringify({ amount: details.cartTotal })
         });
 
-        order = await res.json();
+        const order = await res.json();
 
         if (!res.ok || !order.id) {
             alert(order.error || "Could not create payment order");
@@ -242,30 +288,22 @@ async function placeOrder() {
             return;
         }
 
-    } catch (err) {
-        alert("Server error. Payment failed ❌");
-        payBtn.disabled = false;
-        payBtn.innerText = "Pay Online";
-        return;
-    }
+        const options = {
+            key: RAZORPAY_KEY,
+            amount: order.amount,
+            currency: "INR",
+            name: "NutriBliss",
+            description: "Dry Fruits Purchase",
+            order_id: order.id,
 
-    const options = {
-        key: RAZORPAY_KEY,
-        amount: order.amount,
-        currency: "INR",
-        name: "NutriBliss",
-        description: "Dry Fruits Purchase",
-        order_id: order.id,
+            prefill: {
+                name: details.name,
+                contact: details.phone
+            },
 
-        prefill: {
-            name: details.name,
-            contact: details.phone
-        },
+            theme: { color: "#ff7f00" },
 
-        theme: { color: "#ff7f00" },
-
-        handler: async function (response) {
-            try {
+            handler: async function (response) {
                 const saveRes = await fetch(`${API_URL}/save-order`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -286,22 +324,24 @@ async function placeOrder() {
 
                 localStorage.removeItem("cart");
                 window.location.href = `success.html?phone=${details.phone}`;
+            },
 
-            } catch (error) {
-                alert("Payment done, but order saving failed. Please contact support.");
+            modal: {
+                ondismiss: function () {
+                    payBtn.disabled = false;
+                    payBtn.innerText = "Pay Online";
+                }
             }
-        },
+        };
 
-        modal: {
-            ondismiss: function () {
-                payBtn.disabled = false;
-                payBtn.innerText = "Pay Online";
-            }
-        }
-    };
+        const rzp = new Razorpay(options);
+        rzp.open();
 
-    const rzp = new Razorpay(options);
-    rzp.open();
+    } catch (err) {
+        alert("Server error. Payment failed ❌");
+        payBtn.disabled = false;
+        payBtn.innerText = "Pay Online";
+    }
 }
 
 async function placeCOD() {
@@ -328,8 +368,10 @@ async function placeCOD() {
             })
         });
 
+        const data = await res.json();
+
         if (!res.ok) {
-            alert("Order failed ❌");
+            alert(data.error || "Order failed ❌");
             codBtn.disabled = false;
             codBtn.innerText = "Cash on Delivery (+₹30)";
             return;
