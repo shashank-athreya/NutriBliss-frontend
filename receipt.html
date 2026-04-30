@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receipt - NutriBliss</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fffaf2;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            color: #2e7d32;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            margin: 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        button, a {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            margin-top: 12px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #2e7d32;
+            color: white;
+        }
+
+        .home {
+            background: #ff7f00;
+            color: white;
+        }
+
+        .receipt-card {
+            margin-top: 25px;
+            padding: 22px;
+            border-radius: 16px;
+            background: #fffaf2;
+            border-left: 6px solid #2e7d32;
+        }
+
+        .receipt-card p {
+            margin: 8px 0;
+        }
+
+        .items {
+            margin-top: 12px;
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .total {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff7f00;
+            margin-top: 12px;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .success {
+            color: #2e7d32;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .print-btn {
+            background: #1976d2;
+            color: white;
+        }
+
+        @media print {
+            input, button, .home, .print-btn, .intro {
+                display: none;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>NutriBliss Receipt</h1>
+    <p class="intro" style="text-align:center;">Enter your phone number to view your latest order receipt.</p>
+
+    <input type="text" id="phone" placeholder="Enter phone number">
+
+    <button onclick="loadReceipt()">Get Receipt</button>
+    <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+    <a class="home" href="index.html">Back to Home</a>
+
+    <div id="result"></div>
+</div>
+
+<script>
+const API_URL = "https://nutribliss-backend-4.onrender.com";
+
+const params = new URLSearchParams(window.location.search);
+const phoneFromUrl = params.get("phone");
+
+if (phoneFromUrl) {
+    document.getElementById("phone").value = phoneFromUrl;
+    loadReceipt();
+}
+
+function isCOD(order) {
+    return order.paymentId === "COD";
+}
+
+async function loadReceipt() {
+    const phone = document.getElementById("phone").value.trim();
+    const result = document.getElementById("result");
+
+    result.innerHTML = "";
+
+    if (!phone) {
+        result.innerHTML = `<p class="error">Please enter phone number</p>`;
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/track-order/${phone}`);
+        const orders = await res.json();
+
+        if (!res.ok || !orders || orders.length === 0) {
+            result.innerHTML = `<p class="error">No receipt found for this phone number.</p>`;
+            return;
+        }
+
+        const order = orders[0];
+
+        let itemsHtml = "";
+
+        if (order.items && order.items.length > 0) {
+            order.items.forEach(item => {
+                itemsHtml += `
+                    <p>
+                        <strong>${item.name}</strong> -
+                        ₹${item.price} × ${item.quantity}
+                    </p>
+                `;
+            });
+        } else {
+            itemsHtml = "<p>No items found</p>";
+        }
+
+        const paymentMethod = isCOD(order) ? "Cash on Delivery" : "Online Payment";
+
+        result.innerHTML = `
+            <p class="success">Receipt generated successfully</p>
+
+            <div class="receipt-card">
+                <h2>Order Receipt</h2>
+
+                <p><strong>Customer:</strong> ${order.name}</p>
+                <p><strong>Phone:</strong> ${order.phone}</p>
+                <p><strong>Address:</strong> ${order.address || "N/A"}</p>
+                <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+                <p><strong>Status:</strong> ${order.status}</p>
+                <p><strong>Payment Method:</strong> ${paymentMethod}</p>
+
+                ${!isCOD(order) ? `<p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>` : ""}
+
+                <div class="items">
+                    <strong>Items:</strong>
+                    ${itemsHtml}
+                </div>
+
+                <p class="total">Total Paid / Payable: ₹${order.total}</p>
+            </div>
+        `;
+
+    } catch (err) {
+        result.innerHTML = `<p class="error">Something went wrong. Try again.</p>`;
+    }
+}
+</script>
+
+</body>
+</html>
