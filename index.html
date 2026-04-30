@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: Arial, sans-serif;
@@ -44,18 +40,12 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
 
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .logo span {
-            color: #ffb74d;
-        }
+        .logo { font-size: 28px; font-weight: bold; }
+        .logo span { color: #ffb74d; }
 
         .nav-links {
             display: flex;
-            gap: 22px;
+            gap: 16px;
             flex-wrap: wrap;
             align-items: center;
         }
@@ -64,6 +54,7 @@
             color: white;
             text-decoration: none;
             font-weight: bold;
+            font-size: 14px;
         }
 
         .cart-link {
@@ -96,14 +87,9 @@
             max-width: 560px;
         }
 
-        .hero-buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
+        .hero-buttons { display: flex; gap: 15px; flex-wrap: wrap; }
 
-        .primary-btn,
-        .secondary-btn {
+        .primary-btn, .secondary-btn {
             padding: 14px 22px;
             border-radius: 30px;
             text-decoration: none;
@@ -111,16 +97,8 @@
             display: inline-block;
         }
 
-        .primary-btn {
-            background: #ff7f00;
-            color: white;
-        }
-
-        .secondary-btn {
-            background: white;
-            color: #1b5e20;
-            border: 2px solid #1b5e20;
-        }
+        .primary-btn { background: #ff7f00; color: white; }
+        .secondary-btn { background: white; color: #1b5e20; border: 2px solid #1b5e20; }
 
         .hero-card {
             background: white;
@@ -163,10 +141,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
-        .trust-card h3 {
-            color: #1b5e20;
-            margin-bottom: 8px;
-        }
+        .trust-card h3 { color: #1b5e20; margin-bottom: 8px; }
 
         .section {
             max-width: 1200px;
@@ -184,7 +159,7 @@
         .section-subtitle {
             text-align: center;
             color: #666;
-            margin-bottom: 35px;
+            margin-bottom: 25px;
             font-size: 17px;
         }
 
@@ -202,6 +177,30 @@
             font-size: 18px;
             color: #555;
             line-height: 1.7;
+        }
+
+        .category-filters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .filter-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 25px;
+            background: white;
+            color: #1b5e20;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 14px rgba(0,0,0,0.1);
+        }
+
+        .filter-btn.active {
+            background: #1b5e20;
+            color: white;
         }
 
         .products {
@@ -239,6 +238,17 @@
             font-weight: bold;
         }
 
+        .category-badge {
+            display: inline-block;
+            background: #e7f5e8;
+            color: #1b5e20;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
         .card img {
             width: 100%;
             height: 190px;
@@ -249,23 +259,9 @@
             padding: 10px;
         }
 
-        .card h3 {
-            font-size: 21px;
-            margin-bottom: 8px;
-        }
-
-        .fresh {
-            font-size: 14px;
-            color: #777;
-            margin-bottom: 8px;
-        }
-
-        .price {
-            color: #ff7f00;
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 14px;
-        }
+        .card h3 { font-size: 21px; margin-bottom: 8px; }
+        .fresh { font-size: 14px; color: #777; margin-bottom: 8px; }
+        .price { color: #ff7f00; font-size: 22px; font-weight: bold; margin-bottom: 14px; }
 
         .buy-btn {
             width: 100%;
@@ -279,9 +275,7 @@
             font-weight: bold;
         }
 
-        .buy-btn:hover {
-            background: #e56f00;
-        }
+        .buy-btn:hover { background: #e56f00; }
 
         .why-grid {
             display: grid;
@@ -297,10 +291,7 @@
             text-align: center;
         }
 
-        .why-card h3 {
-            color: #1b5e20;
-            margin-bottom: 10px;
-        }
+        .why-card h3 { color: #1b5e20; margin-bottom: 10px; }
 
         .empty {
             text-align: center;
@@ -330,13 +321,8 @@
             text-align: center;
         }
 
-        .footer h2 span {
-            color: #ffb74d;
-        }
-
-        .footer p {
-            margin: 8px 0;
-        }
+        .footer h2 span { color: #ffb74d; }
+        .footer p { margin: 8px 0; }
 
         @media (max-width: 800px) {
             .hero {
@@ -345,18 +331,9 @@
                 padding: 50px 22px;
             }
 
-            .hero-content h1 {
-                font-size: 38px;
-            }
-
-            .hero-content p {
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            .hero-buttons {
-                justify-content: center;
-            }
+            .hero-content h1 { font-size: 38px; }
+            .hero-content p { margin-left: auto; margin-right: auto; }
+            .hero-buttons { justify-content: center; }
 
             .navbar {
                 padding: 16px 20px;
@@ -365,10 +342,7 @@
                 text-align: center;
             }
 
-            .nav-links {
-                justify-content: center;
-                gap: 14px;
-            }
+            .nav-links { justify-content: center; gap: 12px; }
         }
     </style>
 </head>
@@ -413,25 +387,10 @@
 </section>
 
 <section class="trust-section">
-    <div class="trust-card">
-        <h3>Premium Quality</h3>
-        <p>Carefully selected dry fruits.</p>
-    </div>
-
-    <div class="trust-card">
-        <h3>Healthy Snacking</h3>
-        <p>Perfect for daily nutrition.</p>
-    </div>
-
-    <div class="trust-card">
-        <h3>Fast Delivery</h3>
-        <p>Delivered fresh to your doorstep.</p>
-    </div>
-
-    <div class="trust-card">
-        <h3>Secure Payment</h3>
-        <p>Easy payment with Razorpay.</p>
-    </div>
+    <div class="trust-card"><h3>Premium Quality</h3><p>Carefully selected dry fruits.</p></div>
+    <div class="trust-card"><h3>Healthy Snacking</h3><p>Perfect for daily nutrition.</p></div>
+    <div class="trust-card"><h3>Fast Delivery</h3><p>Delivered fresh to your doorstep.</p></div>
+    <div class="trust-card"><h3>Secure Payment</h3><p>Online payment and COD available.</p></div>
 </section>
 
 <section class="section" id="about">
@@ -450,6 +409,15 @@
     <h2 class="section-title">Our Premium Collection</h2>
     <p class="section-subtitle">Choose from our fresh and healthy dry fruit range.</p>
 
+    <div class="category-filters">
+        <button class="filter-btn active" onclick="filterByCategory('All', this)">All</button>
+        <button class="filter-btn" onclick="filterByCategory('Cashew', this)">Cashew</button>
+        <button class="filter-btn" onclick="filterByCategory('Almond', this)">Almond</button>
+        <button class="filter-btn" onclick="filterByCategory('Pistachio', this)">Pistachio</button>
+        <button class="filter-btn" onclick="filterByCategory('Walnut', this)">Walnut</button>
+        <button class="filter-btn" onclick="filterByCategory('Mixed', this)">Mixed</button>
+    </div>
+
     <div class="products" id="product-list"></div>
 </section>
 
@@ -458,25 +426,10 @@
     <p class="section-subtitle">Built for customers who care about quality.</p>
 
     <div class="why-grid">
-        <div class="why-card">
-            <h3>Quality Checked</h3>
-            <p>Every product is selected with care.</p>
-        </div>
-
-        <div class="why-card">
-            <h3>Fresh Packing</h3>
-            <p>Packed to preserve crunch and taste.</p>
-        </div>
-
-        <div class="why-card">
-            <h3>Easy Tracking</h3>
-            <p>Track your order anytime with phone number.</p>
-        </div>
-
-        <div class="why-card">
-            <h3>Secure Checkout</h3>
-            <p>Safe online payment through Razorpay.</p>
-        </div>
+        <div class="why-card"><h3>Quality Checked</h3><p>Every product is selected with care.</p></div>
+        <div class="why-card"><h3>Fresh Packing</h3><p>Packed to preserve crunch and taste.</p></div>
+        <div class="why-card"><h3>Easy Tracking</h3><p>Track your order anytime with phone number.</p></div>
+        <div class="why-card"><h3>Secure Checkout</h3><p>Online payment and COD support available.</p></div>
     </div>
 </section>
 
@@ -490,7 +443,10 @@
 
 <script>
 const API_URL = "https://nutribliss-backend-4.onrender.com";
-const WHATSAPP_NUMBER = "+918277148677";
+const WHATSAPP_NUMBER = "918277148677";
+
+let allProducts = [];
+let currentCategory = "All";
 
 document.getElementById("whatsapp-link").href =
     `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20NutriBliss,%20I%20need%20help%20with%20an%20order`;
@@ -500,37 +456,65 @@ updateCartCount();
 fetch(`${API_URL}/products`)
     .then(res => res.json())
     .then(data => {
-        const productList = document.getElementById("product-list");
-
-        if (!data || data.length === 0) {
-            productList.innerHTML = `<p class="empty">No products available right now.</p>`;
-            return;
-        }
-
-        data.forEach((product, index) => {
-            const div = document.createElement("div");
-            div.className = "card";
-
-            div.innerHTML = `
-                ${index < 2 ? `<div class="badge">Best Seller</div>` : `<div class="badge">Premium</div>`}
-                <img src="${product.image || 'https://via.placeholder.com/200'}" alt="${product.name}">
-                <h3>${product.name}</h3>
-                <p class="fresh">Fresh packed • Quality assured</p>
-                <p class="price">₹${product.price}/kg</p>
-                <button class="buy-btn">Add to Cart</button>
-            `;
-
-            div.querySelector(".buy-btn").addEventListener("click", () => {
-                addToCart(product);
-            });
-
-            productList.appendChild(div);
-        });
+        allProducts = data || [];
+        renderProducts(allProducts);
     })
     .catch(error => {
         document.getElementById("product-list").innerHTML =
             `<p class="empty">Failed to load products. Please try again later.</p>`;
     });
+
+function filterByCategory(category, button) {
+    currentCategory = category;
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    if (category === "All") {
+        renderProducts(allProducts);
+    } else {
+        const filtered = allProducts.filter(product => {
+            return (product.category || "Mixed") === category;
+        });
+
+        renderProducts(filtered);
+    }
+}
+
+function renderProducts(products) {
+    const productList = document.getElementById("product-list");
+    productList.innerHTML = "";
+
+    if (!products || products.length === 0) {
+        productList.innerHTML = `<p class="empty">No products available in this category.</p>`;
+        return;
+    }
+
+    products.forEach((product, index) => {
+        const category = product.category || "Mixed";
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+            ${index < 2 ? `<div class="badge">Best Seller</div>` : `<div class="badge">Premium</div>`}
+            <img src="${product.image || 'https://via.placeholder.com/200'}" alt="${product.name}">
+            <span class="category-badge">${category}</span>
+            <h3>${product.name}</h3>
+            <p class="fresh">Fresh packed • Quality assured</p>
+            <p class="price">₹${product.price}/kg</p>
+            <button class="buy-btn">Add to Cart</button>
+        `;
+
+        div.querySelector(".buy-btn").addEventListener("click", () => {
+            addToCart(product);
+        });
+
+        productList.appendChild(div);
+    });
+}
 
 function updateCartCount() {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -551,6 +535,7 @@ function addToCart(product) {
             name: product.name,
             price: product.price,
             image: product.image,
+            category: product.category || "Mixed",
             quantity: 1
         });
     }
