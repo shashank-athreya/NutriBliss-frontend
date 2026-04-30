@@ -53,10 +53,17 @@
             font-weight: bold;
         }
 
+        .stock {
+            font-size: 13px;
+            color: #555;
+            margin-top: 5px;
+        }
+
         .qty-controls {
             display: flex;
             gap: 8px;
             margin-top: 8px;
+            align-items: center;
         }
 
         .qty-controls button {
@@ -66,6 +73,11 @@
             color: white;
             border-radius: 5px;
             cursor: pointer;
+        }
+
+        .qty-controls button:disabled {
+            background: #999;
+            cursor: not-allowed;
         }
 
         .remove-btn {
@@ -78,17 +90,20 @@
         }
 
         .total {
+            max-width: 800px;
+            margin: 20px auto 0;
             text-align: right;
             font-size: 20px;
-            margin-top: 20px;
             font-weight: bold;
         }
 
-        .checkout-btn {
+        .checkout-btn,
+        .continue-btn {
+            display: block;
+            max-width: 800px;
             width: 100%;
-            margin-top: 15px;
+            margin: 15px auto 0;
             padding: 14px;
-            background: #ff7f00;
             border: none;
             color: white;
             border-radius: 8px;
@@ -96,16 +111,13 @@
             cursor: pointer;
         }
 
+        .checkout-btn {
+            background: #ff7f00;
+        }
+
         .continue-btn {
-            width: 100%;
-            margin-top: 10px;
-            padding: 14px;
             background: #2e7d32;
-            border: none;
-            color: white;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
+            margin-top: 10px;
         }
 
         .empty {
@@ -118,88 +130,111 @@
 
 <body>
 
-    <h2>Your Cart</h2>
+<h2>Your Cart</h2>
 
-    <div class="cart-container" id="cart-container"></div>
+<div class="cart-container" id="cart-container"></div>
 
-    <div class="total" id="total"></div>
+<div class="total" id="total"></div>
 
-    <button class="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
-    <button class="continue-btn" onclick="continueShopping()">Continue Shopping</button>
+<button class="checkout-btn" id="checkout-btn" onclick="checkout()">Proceed to Checkout</button>
+<button class="continue-btn" onclick="continueShopping()">Continue Shopping</button>
 
-    <script>
-        function loadCart() {
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const container = document.getElementById("cart-container");
-            const totalDiv = document.getElementById("total");
+<script>
+function loadCart() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const container = document.getElementById("cart-container");
+    const totalDiv = document.getElementById("total");
+    const checkoutBtn = document.getElementById("checkout-btn");
 
-            container.innerHTML = "";
+    container.innerHTML = "";
 
-            if (cart.length === 0) {
-                container.innerHTML = `<p class="empty">Your cart is empty</p>`;
-                totalDiv.innerHTML = "";
-                return;
-            }
+    if (cart.length === 0) {
+        container.innerHTML = `<p class="empty">Your cart is empty</p>`;
+        totalDiv.innerHTML = "";
+        checkoutBtn.style.display = "none";
+        return;
+    }
 
-            let total = 0;
+    checkoutBtn.style.display = "block";
 
-            cart.forEach((item, index) => {
-                total += item.price * item.quantity;
+    let total = 0;
 
-                container.innerHTML += `
-                    <div class="cart-item">
-                        <img src="${item.image}">
-                        <div class="cart-details">
-                            <h3>${item.name}</h3>
-                            <p class="price">₹${item.price}</p>
+    cart.forEach((item, index) => {
+        const stock = Number(item.stock ?? 10);
+        const itemTotal = Number(item.price) * Number(item.quantity);
 
-                            <div class="qty-controls">
-                                <button onclick="changeQty(${index}, -1)">-</button>
-                                <span>${item.quantity}</span>
-                                <button onclick="changeQty(${index}, 1)">+</button>
-                            </div>
-                        </div>
+        total += itemTotal;
 
-                        <button class="remove-btn" onclick="removeItem(${index})">X</button>
+        container.innerHTML += `
+            <div class="cart-item">
+                <img src="${item.image || 'https://via.placeholder.com/100'}">
+
+                <div class="cart-details">
+                    <h3>${item.name}</h3>
+                    <p class="price">₹${item.price}</p>
+                    <p class="stock">Available stock: ${stock}</p>
+
+                    <div class="qty-controls">
+                        <button onclick="changeQty(${index}, -1)">-</button>
+                        <span>${item.quantity}</span>
+                        <button onclick="changeQty(${index}, 1)" ${item.quantity >= stock ? "disabled" : ""}>+</button>
                     </div>
-                `;
-            });
+                </div>
 
-            totalDiv.innerText = "Total: ₹" + total;
-        }
+                <button class="remove-btn" onclick="removeItem(${index})">X</button>
+            </div>
+        `;
+    });
 
-        function changeQty(index, change) {
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    totalDiv.innerText = "Total: ₹" + total;
+}
 
-            cart[index].quantity += change;
+function changeQty(index, change) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-            if (cart[index].quantity <= 0) {
-                cart.splice(index, 1);
-            }
+    const stock = Number(cart[index].stock ?? 10);
 
-            localStorage.setItem("cart", JSON.stringify(cart));
-            loadCart();
-        }
+    if (change > 0 && cart[index].quantity >= stock) {
+        alert("You cannot add more than available stock");
+        return;
+    }
 
-        function removeItem(index) {
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    cart[index].quantity += change;
 
-            cart.splice(index, 1);
+    if (cart[index].quantity <= 0) {
+        cart.splice(index, 1);
+    }
 
-            localStorage.setItem("cart", JSON.stringify(cart));
-            loadCart();
-        }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    loadCart();
+}
 
-        function checkout() {
-            window.location.href = "checkout.html";
-        }
+function removeItem(index) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-        function continueShopping() {
-            window.location.href = "index.html";
-        }
+    cart.splice(index, 1);
 
-        loadCart();
-    </script>
+    localStorage.setItem("cart", JSON.stringify(cart));
+    loadCart();
+}
+
+function checkout() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    if (cart.length === 0) {
+        alert("Your cart is empty");
+        return;
+    }
+
+    window.location.href = "checkout.html";
+}
+
+function continueShopping() {
+    window.location.href = "index.html";
+}
+
+loadCart();
+</script>
 
 </body>
 </html>
