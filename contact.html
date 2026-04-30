@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contact Us - NutriBliss</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #fffaf2;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .info {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .info p {
+            margin: 10px 0;
+        }
+
+        a {
+            display: block;
+            margin-top: 15px;
+            padding: 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .whatsapp {
+            background: #25d366;
+            color: white;
+        }
+
+        .call {
+            background: #1976d2;
+            color: white;
+        }
+
+        .home {
+            background: #ff7f00;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Contact NutriBliss</h1>
+    <p>We are here to help you with your orders, support, or product queries.</p>
+
+    <div class="info">
+        <p><strong>Business Name:</strong> NutriBliss</p>
+        <p><strong>Phone:</strong> +91 9876543210</p>
+        <p><strong>Email:</strong> nutribliss@gmail.com</p>
+    </div>
+
+    <!-- WhatsApp Button -->
+    <a class="whatsapp" id="whatsapp-link">
+        Chat on WhatsApp
+    </a>
+
+    <!-- Call Button -->
+    <a class="call" href="tel:8277148677">
+        Call Now
+    </a>
+
+    <!-- Back to Home -->
+    <a class="home" href="index.html">
+        Back to Home
+    </a>
+</div>
+
+<script>
+// 🔁 Replace with your real number
+const PHONE = "+918277148677";
+
+const message = "Hi NutriBliss, I need help with my order.";
+
+document.getElementById("whatsapp-link").href =
+    `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`;
+</script>
+
+</body>
+</html>
