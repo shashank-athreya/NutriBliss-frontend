@@ -114,11 +114,12 @@
             gap: 12px;
         }
 
-        input {
+        input, select {
             padding: 13px;
             width: 100%;
             border: 1px solid #ddd;
             border-radius: 10px;
+            background: white;
         }
 
         .add-btn {
@@ -187,6 +188,17 @@
             margin-top: 4px;
         }
 
+        .category-badge {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 5px 10px;
+            background: #1b5e20;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
         .actions button {
             margin: 4px;
             padding: 9px 13px;
@@ -249,6 +261,14 @@
             <input id="name" placeholder="Product Name">
             <input id="price" placeholder="Price">
             <input id="image" placeholder="Image URL">
+
+            <select id="category">
+                <option value="Mixed">Mixed</option>
+                <option value="Cashew">Cashew</option>
+                <option value="Almond">Almond</option>
+                <option value="Pistachio">Pistachio</option>
+                <option value="Walnut">Walnut</option>
+            </select>
         </div>
 
         <button class="add-btn" onclick="addProduct()">+ Add Product</button>
@@ -265,6 +285,15 @@
             <div class="filter-grid" style="margin-top:12px;">
                 <input id="min-price" placeholder="Min price" oninput="filterProducts()">
                 <input id="max-price" placeholder="Max price" oninput="filterProducts()">
+
+                <select id="category-filter" onchange="filterProducts()">
+                    <option value="All">All Categories</option>
+                    <option value="Mixed">Mixed</option>
+                    <option value="Cashew">Cashew</option>
+                    <option value="Almond">Almond</option>
+                    <option value="Pistachio">Pistachio</option>
+                    <option value="Walnut">Walnut</option>
+                </select>
             </div>
         </div>
 
@@ -344,6 +373,7 @@ async function addProduct() {
     const name = document.getElementById("name").value.trim();
     const price = document.getElementById("price").value.trim();
     const image = document.getElementById("image").value.trim();
+    const category = document.getElementById("category").value;
 
     if (!name || !price) {
         alert("Name and price are required");
@@ -357,7 +387,7 @@ async function addProduct() {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`
             },
-            body: JSON.stringify({ name, price, image })
+            body: JSON.stringify({ name, price, image, category })
         });
 
         if (handleAuthError(res)) return;
@@ -369,6 +399,7 @@ async function addProduct() {
         document.getElementById("name").value = "";
         document.getElementById("price").value = "";
         document.getElementById("image").value = "";
+        document.getElementById("category").value = "Mixed";
 
         loadProducts();
     } catch (err) {
@@ -395,12 +426,19 @@ async function deleteProduct(id) {
     }
 }
 
-async function editProduct(id, name, price, image) {
+async function editProduct(id, name, price, image, category) {
     const newName = prompt("New name:", name);
     const newPrice = prompt("New price:", price);
     const newImage = prompt("New image URL:", image);
+    const newCategory = prompt(
+        "New category: Mixed, Cashew, Almond, Pistachio, Walnut",
+        category || "Mixed"
+    );
 
     if (!newName || !newPrice) return;
+
+    const validCategories = ["Mixed", "Cashew", "Almond", "Pistachio", "Walnut"];
+    const finalCategory = validCategories.includes(newCategory) ? newCategory : "Mixed";
 
     try {
         const res = await fetch(`${BASE_URL}/products/${id}`, {
@@ -412,7 +450,8 @@ async function editProduct(id, name, price, image) {
             body: JSON.stringify({
                 name: newName,
                 price: newPrice,
-                image: newImage
+                image: newImage,
+                category: finalCategory
             })
         });
 
@@ -450,12 +489,17 @@ function filterProducts() {
     const search = document.getElementById("search").value.toLowerCase();
     const minPrice = Number(document.getElementById("min-price").value) || 0;
     const maxPrice = Number(document.getElementById("max-price").value) || Infinity;
+    const categoryFilter = document.getElementById("category-filter").value;
 
     const filtered = allProducts.filter(product => {
         const nameMatch = product.name.toLowerCase().includes(search);
         const price = Number(product.price);
+        const productCategory = product.category || "Mixed";
 
-        return nameMatch && price >= minPrice && price <= maxPrice;
+        const priceMatch = price >= minPrice && price <= maxPrice;
+        const categoryMatch = categoryFilter === "All" || productCategory === categoryFilter;
+
+        return nameMatch && priceMatch && categoryMatch;
     });
 
     renderProducts(filtered);
@@ -471,6 +515,7 @@ function renderProducts(data) {
     }
 
     data.forEach((item) => {
+        const category = item.category || "Mixed";
         const li = document.createElement("li");
 
         li.innerHTML = `
@@ -479,11 +524,12 @@ function renderProducts(data) {
                 <div>
                     <div class="product-name">${item.name}</div>
                     <div class="product-price">₹${item.price}/kg</div>
+                    <span class="category-badge">${category}</span>
                 </div>
             </div>
 
             <div class="actions">
-                <button class="edit-btn" onclick="editProduct('${item._id}', '${item.name}', '${item.price}', '${item.image || ""}')">Edit</button>
+                <button class="edit-btn" onclick="editProduct('${item._id}', '${item.name}', '${item.price}', '${item.image || ""}', '${category}')">Edit</button>
                 <button class="delete-btn" onclick="deleteProduct('${item._id}')">Delete</button>
             </div>
         `;
