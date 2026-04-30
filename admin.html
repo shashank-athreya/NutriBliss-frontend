@@ -38,9 +38,7 @@
             box-shadow: 0 6px 18px rgba(0,0,0,0.15);
         }
 
-        .navbar h2 span {
-            color: #ffb74d;
-        }
+        .navbar h2 span { color: #ffb74d; }
 
         .navbar a, .navbar button {
             color: white;
@@ -199,13 +197,9 @@
                 text-align: center;
             }
 
-            li {
-                align-items: flex-start;
-            }
+            li { align-items: flex-start; }
 
-            .product-info {
-                align-items: flex-start;
-            }
+            .product-info { align-items: flex-start; }
         }
     </style>
 </head>
@@ -247,6 +241,26 @@
         <div class="stat-card">
             <h3>Total Products</h3>
             <p id="total-products">0</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>COD Orders</h3>
+            <p id="cod-orders">0</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Online Orders</h3>
+            <p id="online-orders">0</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Delivered Orders</h3>
+            <p id="delivered-orders">0</p>
+        </div>
+
+        <div class="stat-card">
+            <h3>Cancelled Orders</h3>
+            <p id="cancelled-orders">0</p>
         </div>
     </div>
 
@@ -302,18 +316,32 @@ async function loadAnalytics() {
 
         let totalRevenue = 0;
         let pendingOrders = 0;
+        let codOrders = 0;
+        let onlineOrders = 0;
+        let deliveredOrders = 0;
+        let cancelledOrders = 0;
 
         orders.forEach(order => {
             totalRevenue += Number(order.total) || 0;
 
-            if (order.status === "Pending") {
-                pendingOrders++;
+            if (order.status === "Pending") pendingOrders++;
+            if (order.status === "Delivered") deliveredOrders++;
+            if (order.status === "Cancelled") cancelledOrders++;
+
+            if (order.paymentId === "COD") {
+                codOrders++;
+            } else {
+                onlineOrders++;
             }
         });
 
         document.getElementById("total-revenue").innerText = "₹" + totalRevenue;
         document.getElementById("total-orders").innerText = orders.length;
         document.getElementById("pending-orders").innerText = pendingOrders;
+        document.getElementById("cod-orders").innerText = codOrders;
+        document.getElementById("online-orders").innerText = onlineOrders;
+        document.getElementById("delivered-orders").innerText = deliveredOrders;
+        document.getElementById("cancelled-orders").innerText = cancelledOrders;
 
     } catch (err) {
         console.error("Analytics error:", err);
