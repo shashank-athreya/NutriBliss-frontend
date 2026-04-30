@@ -30,36 +30,59 @@
             color: white;
             padding: 8px 12px;
             border: none;
-            border-radius: 6px;
             margin-left: 5px;
+            border-radius: 6px;
             cursor: pointer;
         }
 
         .container {
+            max-width: 1100px;
+            margin: auto;
             padding: 20px;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
         }
 
         input, select {
             padding: 10px;
-            margin: 5px 0;
-            width: 100%;
+            margin: 5px;
+            width: 180px;
         }
 
-        .card {
-            background: white;
-            padding: 15px;
-            margin-top: 10px;
-            border-radius: 10px;
+        button {
+            padding: 10px;
+            background: #1b5e20;
+            color: white;
+            border: none;
+            cursor: pointer;
         }
 
-        .low-stock {
-            color: orange;
-            font-weight: bold;
+        ul {
+            list-style: none;
+            padding: 0;
         }
 
-        .out-stock {
+        li {
+            background: #fffaf2;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stock-low {
             color: red;
             font-weight: bold;
+        }
+
+        .stock-ok {
+            color: green;
         }
     </style>
 </head>
@@ -67,7 +90,7 @@
 <body>
 
 <div class="navbar">
-    <h3>NutriBliss Admin</h3>
+    <h2>NutriBliss Admin</h2>
     <div>
         <a href="admin-orders.html">Orders</a>
         <button onclick="logout()">Logout</button>
@@ -76,63 +99,112 @@
 
 <div class="container">
 
-    <h2>Add Product</h2>
+    <!-- STATS -->
+    <div class="box">
+        <h3>Analytics</h3>
+        <p>Total Revenue: ₹<span id="revenue">0</span></p>
+        <p>Total Orders: <span id="orders">0</span></p>
+        <p>Pending Orders: <span id="pending">0</span></p>
+    </div>
 
-    <input id="name" placeholder="Product Name">
-    <input id="price" placeholder="Price">
-    <input id="image" placeholder="Image URL">
+    <!-- ADD PRODUCT -->
+    <div class="box">
+        <h3>Add Product</h3>
 
-    <select id="category">
-        <option>Mixed</option>
-        <option>Cashew</option>
-        <option>Almond</option>
-        <option>Pistachio</option>
-        <option>Walnut</option>
-    </select>
+        <input id="name" placeholder="Name">
+        <input id="price" placeholder="Price">
+        <input id="image" placeholder="Image URL">
+        <input id="stock" placeholder="Stock">
 
-    <input id="stock" placeholder="Stock Quantity">
+        <select id="category">
+            <option>Mixed</option>
+            <option>Cashew</option>
+            <option>Almond</option>
+            <option>Pistachio</option>
+            <option>Walnut</option>
+        </select>
 
-    <button onclick="addProduct()">Add Product</button>
+        <button onclick="addProduct()">Add</button>
+    </div>
 
-    <h2>Products</h2>
-    <div id="products"></div>
+    <!-- FILTER -->
+    <div class="box">
+        <h3>Filter</h3>
+
+        <input id="search" placeholder="Search" oninput="filterProducts()">
+
+        <select id="categoryFilter" onchange="filterProducts()">
+            <option value="All">All</option>
+            <option>Cashew</option>
+            <option>Almond</option>
+            <option>Pistachio</option>
+            <option>Walnut</option>
+            <option>Mixed</option>
+        </select>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="box">
+        <h3>Products</h3>
+        <ul id="list"></ul>
+    </div>
 
 </div>
 
 <script>
-const BASE_URL = "https://nutribliss-backend-4.onrender.com";
+const API = "https://nutribliss-backend-4.onrender.com";
 const token = localStorage.getItem("adminToken");
 
+let allProducts = [];
+
+window.onload = () => {
+    loadProducts();
+    loadAnalytics();
+};
+
+function logout() {
+    localStorage.removeItem("adminToken");
+    window.location.href = "admin-login.html";
+}
+
+// ================= PRODUCTS =================
 async function loadProducts() {
-    const res = await fetch(`${BASE_URL}/products`);
+    const res = await fetch(`${API}/products`);
     const data = await res.json();
 
-    const container = document.getElementById("products");
-    container.innerHTML = "";
+    allProducts = data;
+    render(data);
+}
+
+function render(data) {
+    const list = document.getElementById("list");
+    list.innerHTML = "";
 
     data.forEach(p => {
-        let stockText = `Stock: ${p.stock}`;
+        const li = document.createElement("li");
 
-        if (p.stock <= 0) {
-            stockText = `<span class="out-stock">Out of Stock</span>`;
-        } else if (p.stock <= 5) {
-            stockText = `<span class="low-stock">Low Stock (${p.stock})</span>`;
-        }
+        const stockClass = p.stock <= 5 ? "stock-low" : "stock-ok";
 
-        container.innerHTML += `
-            <div class="card">
-                <h3>${p.name}</h3>
-                <p>₹${p.price}</p>
-                <p>${p.category}</p>
-                <p>${stockText}</p>
+        li.innerHTML = `
+            <div>
+                <b>${p.name}</b> - ₹${p.price}
+                <br>
+                <small>${p.category}</small>
+                <br>
+                <span class="${stockClass}">Stock: ${p.stock}</span>
+            </div>
 
-                <button onclick="editProduct('${p._id}', '${p.name}', '${p.price}', '${p.image}', '${p.category}', '${p.stock}')">Edit</button>
-                <button onclick="deleteProduct('${p._id}')">Delete</button>
+            <div>
+                <button onclick="edit('${p._id}', '${p.name}', '${p.price}', '${p.image}', '${p.category}', '${p.stock}')">Edit</button>
+                <button onclick="del('${p._id}')">Delete</button>
             </div>
         `;
+
+        list.appendChild(li);
     });
 }
 
+// ================= ADD =================
 async function addProduct() {
     const name = document.getElementById("name").value;
     const price = document.getElementById("price").value;
@@ -140,7 +212,7 @@ async function addProduct() {
     const category = document.getElementById("category").value;
     const stock = document.getElementById("stock").value;
 
-    await fetch(`${BASE_URL}/products`, {
+    await fetch(`${API}/products`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -149,12 +221,12 @@ async function addProduct() {
         body: JSON.stringify({ name, price, image, category, stock })
     });
 
-    alert("Added ✅");
     loadProducts();
 }
 
-async function deleteProduct(id) {
-    await fetch(`${BASE_URL}/products/${id}`, {
+// ================= DELETE =================
+async function del(id) {
+    await fetch(`${API}/products/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
     });
@@ -162,12 +234,13 @@ async function deleteProduct(id) {
     loadProducts();
 }
 
-async function editProduct(id, name, price, image, category, stock) {
-    const newName = prompt("Name:", name);
-    const newPrice = prompt("Price:", price);
-    const newStock = prompt("Stock:", stock);
+// ================= EDIT =================
+async function edit(id, name, price, image, category, stock) {
+    const newName = prompt("Name", name);
+    const newPrice = prompt("Price", price);
+    const newStock = prompt("Stock", stock);
 
-    await fetch(`${BASE_URL}/products/${id}`, {
+    await fetch(`${API}/products/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -185,12 +258,39 @@ async function editProduct(id, name, price, image, category, stock) {
     loadProducts();
 }
 
-function logout() {
-    localStorage.removeItem("adminToken");
-    window.location.href = "admin-login.html";
+// ================= FILTER =================
+function filterProducts() {
+    const search = document.getElementById("search").value.toLowerCase();
+    const cat = document.getElementById("categoryFilter").value;
+
+    const filtered = allProducts.filter(p => {
+        const nameMatch = p.name.toLowerCase().includes(search);
+        const catMatch = cat === "All" || p.category === cat;
+        return nameMatch && catMatch;
+    });
+
+    render(filtered);
 }
 
-loadProducts();
+// ================= ANALYTICS =================
+async function loadAnalytics() {
+    const res = await fetch(`${API}/orders`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+
+    let revenue = 0, pending = 0;
+
+    data.forEach(o => {
+        revenue += Number(o.total);
+        if (o.status === "Pending") pending++;
+    });
+
+    document.getElementById("revenue").innerText = revenue;
+    document.getElementById("orders").innerText = data.length;
+    document.getElementById("pending").innerText = pending;
+}
 </script>
 
 </body>
