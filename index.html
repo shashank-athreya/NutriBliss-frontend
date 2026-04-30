@@ -37,7 +37,6 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
         }
 
         .logo { font-size: 28px; font-weight: bold; }
@@ -238,6 +237,10 @@
             font-weight: bold;
         }
 
+        .out-badge {
+            background: #d32f2f;
+        }
+
         .category-badge {
             display: inline-block;
             background: #e7f5e8;
@@ -248,6 +251,16 @@
             font-weight: bold;
             margin-bottom: 8px;
         }
+
+        .stock-text {
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .in-stock { color: #2e7d32; }
+        .low-stock { color: #ff7f00; }
+        .out-stock { color: #d32f2f; }
 
         .card img {
             width: 100%;
@@ -261,7 +274,7 @@
 
         .card h3 { font-size: 21px; margin-bottom: 8px; }
         .fresh { font-size: 14px; color: #777; margin-bottom: 8px; }
-        .price { color: #ff7f00; font-size: 22px; font-weight: bold; margin-bottom: 14px; }
+        .price { color: #ff7f00; font-size: 22px; font-weight: bold; margin-bottom: 10px; }
 
         .buy-btn {
             width: 100%;
@@ -276,6 +289,11 @@
         }
 
         .buy-btn:hover { background: #e56f00; }
+
+        .buy-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
 
         .why-grid {
             display: grid;
@@ -446,7 +464,6 @@ const API_URL = "https://nutribliss-backend-4.onrender.com";
 const WHATSAPP_NUMBER = "918277148677";
 
 let allProducts = [];
-let currentCategory = "All";
 
 document.getElementById("whatsapp-link").href =
     `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%20NutriBliss,%20I%20need%20help%20with%20an%20order`;
@@ -465,23 +482,28 @@ fetch(`${API_URL}/products`)
     });
 
 function filterByCategory(category, button) {
-    currentCategory = category;
-
-    document.querySelectorAll(".filter-btn").forEach(btn => {
-        btn.classList.remove("active");
-    });
-
+    document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
     button.classList.add("active");
 
     if (category === "All") {
         renderProducts(allProducts);
     } else {
-        const filtered = allProducts.filter(product => {
-            return (product.category || "Mixed") === category;
-        });
-
-        renderProducts(filtered);
+        renderProducts(allProducts.filter(product => (product.category || "Mixed") === category));
     }
+}
+
+function getStockText(stock) {
+    stock = Number(stock);
+
+    if (stock <= 0) {
+        return `<p class="stock-text out-stock">Out of Stock</p>`;
+    }
+
+    if (stock <= 5) {
+        return `<p class="stock-text low-stock">Only ${stock} left</p>`;
+    }
+
+    return `<p class="stock-text in-stock">In Stock</p>`;
 }
 
 function renderProducts(products) {
@@ -495,22 +517,33 @@ function renderProducts(products) {
 
     products.forEach((product, index) => {
         const category = product.category || "Mixed";
+        const stock = Number(product.stock ?? 10);
+        const isOut = stock <= 0;
+
         const div = document.createElement("div");
         div.className = "card";
 
         div.innerHTML = `
-            ${index < 2 ? `<div class="badge">Best Seller</div>` : `<div class="badge">Premium</div>`}
+            <div class="badge ${isOut ? 'out-badge' : ''}">
+                ${isOut ? 'Out of Stock' : (index < 2 ? 'Best Seller' : 'Premium')}
+            </div>
+
             <img src="${product.image || 'https://via.placeholder.com/200'}" alt="${product.name}">
             <span class="category-badge">${category}</span>
             <h3>${product.name}</h3>
             <p class="fresh">Fresh packed • Quality assured</p>
             <p class="price">₹${product.price}/kg</p>
-            <button class="buy-btn">Add to Cart</button>
+            ${getStockText(stock)}
+            <button class="buy-btn" ${isOut ? "disabled" : ""}>
+                ${isOut ? "Out of Stock" : "Add to Cart"}
+            </button>
         `;
 
-        div.querySelector(".buy-btn").addEventListener("click", () => {
-            addToCart(product);
-        });
+        if (!isOut) {
+            div.querySelector(".buy-btn").addEventListener("click", () => {
+                addToCart(product);
+            });
+        }
 
         productList.appendChild(div);
     });
@@ -523,11 +556,23 @@ function updateCartCount() {
 }
 
 function addToCart(product) {
+    const stock = Number(product.stock ?? 10);
+
+    if (stock <= 0) {
+        alert("This product is out of stock");
+        return;
+    }
+
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
     let existing = cart.find(item => item.name === product.name);
 
     if (existing) {
+        if (existing.quantity >= stock) {
+            alert("You cannot add more than available stock");
+            return;
+        }
+
         existing.quantity += 1;
     } else {
         cart.push({
@@ -536,6 +581,7 @@ function addToCart(product) {
             price: product.price,
             image: product.image,
             category: product.category || "Mixed",
+            stock,
             quantity: 1
         });
     }
