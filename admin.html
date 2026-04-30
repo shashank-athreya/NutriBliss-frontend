@@ -11,78 +11,204 @@
     </script>
 
     <style>
+        * { box-sizing: border-box; }
+
         body {
-            font-family: Arial;
+            font-family: Arial, sans-serif;
             margin: 0;
-            background: #fffaf2;
+            background: linear-gradient(135deg, #fffaf2, #eef8ee);
+            color: #333;
         }
 
         .navbar {
             background: #1b5e20;
             color: white;
-            padding: 15px;
+            padding: 18px 30px;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.15);
         }
+
+        .navbar h2 span { color: #ffb74d; }
 
         .navbar a, .navbar button {
+            color: white;
             background: #ff7f00;
-            color: white;
-            padding: 8px 12px;
             border: none;
-            margin-left: 5px;
-            border-radius: 6px;
+            padding: 10px 14px;
+            border-radius: 25px;
+            text-decoration: none;
             cursor: pointer;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        .box {
-            background: white;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-        }
-
-        input, select {
-            padding: 10px;
-            margin: 5px;
-            width: 180px;
-        }
-
-        button {
-            padding: 10px;
-            background: #1b5e20;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-
-        ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        li {
-            background: #fffaf2;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .stock-low {
-            color: red;
+            margin-left: 8px;
             font-weight: bold;
         }
 
-        .stock-ok {
-            color: green;
+        .container {
+            max-width: 1150px;
+            margin: auto;
+            padding: 28px;
+        }
+
+        .welcome, .box, .stat-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 28px rgba(0,0,0,0.1);
+        }
+
+        .welcome {
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .welcome h1 {
+            color: #1b5e20;
+            margin-bottom: 8px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            padding: 22px;
+            border-left: 7px solid #1b5e20;
+        }
+
+        .stat-card h3 {
+            color: #555;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff7f00;
+        }
+
+        .box {
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .box h2 {
+            color: #1b5e20;
+            margin-bottom: 15px;
+        }
+
+        .form-grid, .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        input, select {
+            padding: 13px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: white;
+        }
+
+        .add-btn {
+            margin-top: 14px;
+            padding: 13px 18px;
+            background: #1b5e20;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .filter-box {
+            background: #fffaf2;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 18px;
+            border: 1px solid #f1e5d0;
+        }
+
+        .product-card {
+            background: #fffaf2;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            border: 1px solid #f1e5d0;
+        }
+
+        .product-left {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .product-left img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            background: white;
+            border-radius: 14px;
+            padding: 6px;
+        }
+
+        .product-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .product-price {
+            color: #ff7f00;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .category-badge { background: #1b5e20; }
+        .stock-ok { background: #2e7d32; }
+        .stock-low { background: #ff7f00; }
+        .stock-out { background: #d32f2f; }
+
+        .actions button {
+            margin: 4px;
+            padding: 9px 13px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            font-weight: bold;
+        }
+
+        .edit-btn { background: #ff7f00; }
+        .delete-btn { background: #d32f2f; }
+
+        @media(max-width: 650px) {
+            .navbar {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .product-left {
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
@@ -90,63 +216,70 @@
 <body>
 
 <div class="navbar">
-    <h2>NutriBliss Admin</h2>
+    <h2>Nutri<span>Bliss</span> Admin</h2>
     <div>
         <a href="admin-orders.html">Orders</a>
+        <a href="index.html">View Site</a>
         <button onclick="logout()">Logout</button>
     </div>
 </div>
 
 <div class="container">
 
-    <!-- STATS -->
-    <div class="box">
-        <h3>Analytics</h3>
-        <p>Total Revenue: ₹<span id="revenue">0</span></p>
-        <p>Total Orders: <span id="orders">0</span></p>
-        <p>Pending Orders: <span id="pending">0</span></p>
+    <div class="welcome">
+        <h1>Dashboard</h1>
+        <p>Manage products, stock, categories, orders and NutriBliss business performance.</p>
     </div>
 
-    <!-- ADD PRODUCT -->
-    <div class="box">
-        <h3>Add Product</h3>
-
-        <input id="name" placeholder="Name">
-        <input id="price" placeholder="Price">
-        <input id="image" placeholder="Image URL">
-        <input id="stock" placeholder="Stock">
-
-        <select id="category">
-            <option>Mixed</option>
-            <option>Cashew</option>
-            <option>Almond</option>
-            <option>Pistachio</option>
-            <option>Walnut</option>
-        </select>
-
-        <button onclick="addProduct()">Add</button>
+    <div class="stats">
+        <div class="stat-card"><h3>Total Revenue</h3><p>₹<span id="revenue">0</span></p></div>
+        <div class="stat-card"><h3>Total Orders</h3><p id="orders">0</p></div>
+        <div class="stat-card"><h3>Pending Orders</h3><p id="pending">0</p></div>
+        <div class="stat-card"><h3>Total Products</h3><p id="total-products">0</p></div>
+        <div class="stat-card"><h3>Low Stock</h3><p id="low-stock">0</p></div>
+        <div class="stat-card"><h3>Out of Stock</h3><p id="out-stock">0</p></div>
     </div>
 
-    <!-- FILTER -->
     <div class="box">
-        <h3>Filter</h3>
+        <h2>Add Product</h2>
 
-        <input id="search" placeholder="Search" oninput="filterProducts()">
+        <div class="form-grid">
+            <input id="name" placeholder="Product Name">
+            <input id="price" placeholder="Price">
+            <input id="image" placeholder="Image URL">
+            <input id="stock" placeholder="Stock Quantity">
 
-        <select id="categoryFilter" onchange="filterProducts()">
-            <option value="All">All</option>
-            <option>Cashew</option>
-            <option>Almond</option>
-            <option>Pistachio</option>
-            <option>Walnut</option>
-            <option>Mixed</option>
-        </select>
+            <select id="category">
+                <option>Mixed</option>
+                <option>Cashew</option>
+                <option>Almond</option>
+                <option>Pistachio</option>
+                <option>Walnut</option>
+            </select>
+        </div>
+
+        <button class="add-btn" onclick="addProduct()">+ Add Product</button>
     </div>
 
-    <!-- PRODUCTS -->
     <div class="box">
-        <h3>Products</h3>
-        <ul id="list"></ul>
+        <h2>Product Inventory</h2>
+
+        <div class="filter-box">
+            <div class="filter-grid">
+                <input id="search" placeholder="Search product..." oninput="filterProducts()">
+
+                <select id="categoryFilter" onchange="filterProducts()">
+                    <option value="All">All Categories</option>
+                    <option>Cashew</option>
+                    <option>Almond</option>
+                    <option>Pistachio</option>
+                    <option>Walnut</option>
+                    <option>Mixed</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="list"></div>
     </div>
 
 </div>
@@ -162,57 +295,94 @@ window.onload = () => {
     loadAnalytics();
 };
 
+function handleAuthError(res) {
+    if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem("adminToken");
+        alert("Session expired. Please login again.");
+        window.location.href = "admin-login.html";
+        return true;
+    }
+    return false;
+}
+
 function logout() {
     localStorage.removeItem("adminToken");
     window.location.href = "admin-login.html";
 }
 
-// ================= PRODUCTS =================
 async function loadProducts() {
     const res = await fetch(`${API}/products`);
     const data = await res.json();
 
-    allProducts = data;
-    render(data);
+    allProducts = data || [];
+    updateProductStats();
+    render(allProducts);
+}
+
+function updateProductStats() {
+    document.getElementById("total-products").innerText = allProducts.length;
+    document.getElementById("low-stock").innerText =
+        allProducts.filter(p => Number(p.stock) > 0 && Number(p.stock) <= 5).length;
+    document.getElementById("out-stock").innerText =
+        allProducts.filter(p => Number(p.stock) <= 0).length;
+}
+
+function getStockBadge(stock) {
+    stock = Number(stock);
+
+    if (stock <= 0) return `<span class="badge stock-out">Out of Stock</span>`;
+    if (stock <= 5) return `<span class="badge stock-low">Low Stock: ${stock}</span>`;
+    return `<span class="badge stock-ok">Stock: ${stock}</span>`;
 }
 
 function render(data) {
     const list = document.getElementById("list");
     list.innerHTML = "";
 
+    if (!data || data.length === 0) {
+        list.innerHTML = "<p>No products found</p>";
+        return;
+    }
+
     data.forEach(p => {
-        const li = document.createElement("li");
+        const div = document.createElement("div");
+        div.className = "product-card";
 
-        const stockClass = p.stock <= 5 ? "stock-low" : "stock-ok";
+        div.innerHTML = `
+            <div class="product-left">
+                <img src="${p.image || 'https://via.placeholder.com/100'}">
 
-        li.innerHTML = `
-            <div>
-                <b>${p.name}</b> - ₹${p.price}
-                <br>
-                <small>${p.category}</small>
-                <br>
-                <span class="${stockClass}">Stock: ${p.stock}</span>
+                <div>
+                    <div class="product-name">${p.name}</div>
+                    <div class="product-price">₹${p.price}/kg</div>
+                    <span class="badge category-badge">${p.category || "Mixed"}</span>
+                    ${getStockBadge(p.stock)}
+                </div>
             </div>
 
-            <div>
-                <button onclick="edit('${p._id}', '${p.name}', '${p.price}', '${p.image}', '${p.category}', '${p.stock}')">Edit</button>
-                <button onclick="del('${p._id}')">Delete</button>
+            <div class="actions">
+                <button class="edit-btn" onclick="edit('${p._id}', '${p.name}', '${p.price}', '${p.image || ""}', '${p.category || "Mixed"}', '${p.stock || 0}')">Edit</button>
+                <button class="delete-btn" onclick="del('${p._id}')">Delete</button>
             </div>
         `;
 
-        list.appendChild(li);
+        list.appendChild(div);
     });
 }
 
-// ================= ADD =================
 async function addProduct() {
-    const name = document.getElementById("name").value;
-    const price = document.getElementById("price").value;
-    const image = document.getElementById("image").value;
+    const name = document.getElementById("name").value.trim();
+    const price = document.getElementById("price").value.trim();
+    const image = document.getElementById("image").value.trim();
     const category = document.getElementById("category").value;
-    const stock = document.getElementById("stock").value;
+    const stock = document.getElementById("stock").value.trim();
 
-    await fetch(`${API}/products`, {
+    if (!name || !price) {
+        alert("Name and price are required");
+        return;
+    }
+
+    const res = await fetch(`${API}/products`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -221,26 +391,43 @@ async function addProduct() {
         body: JSON.stringify({ name, price, image, category, stock })
     });
 
+    if (handleAuthError(res)) return;
+
+    document.getElementById("name").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("image").value = "";
+    document.getElementById("stock").value = "";
+    document.getElementById("category").value = "Mixed";
+
     loadProducts();
 }
 
-// ================= DELETE =================
 async function del(id) {
-    await fetch(`${API}/products/${id}`, {
+    if (!confirm("Delete this product?")) return;
+
+    const res = await fetch(`${API}/products/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
     });
 
+    if (handleAuthError(res)) return;
+
     loadProducts();
 }
 
-// ================= EDIT =================
 async function edit(id, name, price, image, category, stock) {
     const newName = prompt("Name", name);
     const newPrice = prompt("Price", price);
+    const newImage = prompt("Image URL", image);
+    const newCategory = prompt("Category: Mixed, Cashew, Almond, Pistachio, Walnut", category);
     const newStock = prompt("Stock", stock);
 
-    await fetch(`${API}/products/${id}`, {
+    if (!newName || !newPrice) return;
+
+    const validCategories = ["Mixed", "Cashew", "Almond", "Pistachio", "Walnut"];
+    const finalCategory = validCategories.includes(newCategory) ? newCategory : "Mixed";
+
+    const res = await fetch(`${API}/products/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -249,16 +436,17 @@ async function edit(id, name, price, image, category, stock) {
         body: JSON.stringify({
             name: newName,
             price: newPrice,
-            image,
-            category,
+            image: newImage,
+            category: finalCategory,
             stock: newStock
         })
     });
 
+    if (handleAuthError(res)) return;
+
     loadProducts();
 }
 
-// ================= FILTER =================
 function filterProducts() {
     const search = document.getElementById("search").value.toLowerCase();
     const cat = document.getElementById("categoryFilter").value;
@@ -272,18 +460,20 @@ function filterProducts() {
     render(filtered);
 }
 
-// ================= ANALYTICS =================
 async function loadAnalytics() {
     const res = await fetch(`${API}/orders`, {
         headers: { Authorization: `Bearer ${token}` }
     });
 
+    if (handleAuthError(res)) return;
+
     const data = await res.json();
 
-    let revenue = 0, pending = 0;
+    let revenue = 0;
+    let pending = 0;
 
     data.forEach(o => {
-        revenue += Number(o.total);
+        revenue += Number(o.total) || 0;
         if (o.status === "Pending") pending++;
     });
 
