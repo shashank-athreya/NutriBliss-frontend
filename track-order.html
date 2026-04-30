@@ -2,119 +2,263 @@
 <html>
 <head>
   <title>Track Order - NutriBliss</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background: #f7f7f7;
+      background: #fffaf2;
+      margin: 0;
       padding: 30px;
     }
 
     .container {
-      max-width: 600px;
+      max-width: 750px;
       margin: auto;
       background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 28px;
+      border-radius: 18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #2e7d32;
+      text-align: center;
+    }
+
+    p {
+      color: #555;
     }
 
     input {
       width: 100%;
-      padding: 12px;
+      padding: 13px;
       margin: 15px 0;
       border: 1px solid #ccc;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 16px;
     }
 
     button {
       width: 100%;
-      padding: 12px;
+      padding: 13px;
       background: #2e7d32;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 16px;
       cursor: pointer;
+      font-weight: bold;
+    }
+
+    .home-btn {
+      display: block;
+      text-align: center;
+      margin-top: 12px;
+      padding: 13px;
+      background: #ff7f00;
+      color: white;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
     }
 
     .order-card {
-      margin-top: 20px;
-      padding: 15px;
-      border-radius: 10px;
-      background: #f1f8e9;
-      border-left: 5px solid #2e7d32;
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 16px;
+      background: #fffaf2;
+      border-left: 6px solid #2e7d32;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
 
-    .status {
+    .order-card p {
+      margin: 8px 0;
+    }
+
+    .status-badge,
+    .payment-badge {
+      padding: 5px 10px;
+      border-radius: 8px;
+      color: white;
       font-weight: bold;
-      color: #2e7d32;
+      display: inline-block;
+    }
+
+    .status-pending {
+      background: #fbc02d;
+      color: #333;
+    }
+
+    .status-processing {
+      background: #1976d2;
+    }
+
+    .status-shipped {
+      background: #7b1fa2;
+    }
+
+    .status-delivered {
+      background: #2e7d32;
+    }
+
+    .status-cancelled {
+      background: #d32f2f;
+    }
+
+    .payment-cod {
+      background: #6d4c41;
+    }
+
+    .payment-online {
+      background: #1565c0;
+    }
+
+    .items {
+      margin-top: 12px;
+      padding: 12px;
+      background: white;
+      border-radius: 12px;
     }
 
     .error {
       color: red;
       margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .success {
+      color: #2e7d32;
+      margin-top: 15px;
+      text-align: center;
+      font-weight: bold;
     }
   </style>
 </head>
+
 <body>
 
-  <div class="container">
-    <h2>Track Your Order</h2>
-    <p>Enter your phone number to check your order status.</p>
+<div class="container">
+  <h2>Track Your Order</h2>
+  <p style="text-align:center;">Enter your phone number to check your NutriBliss order status.</p>
 
-    <input type="text" id="phone" placeholder="Enter phone number">
+  <input type="text" id="phone" placeholder="Enter phone number">
 
-    <button onclick="trackOrder()">Track Order</button>
+  <button onclick="trackOrder()">Track Order</button>
+  <a class="home-btn" href="index.html">Continue Shopping</a>
 
-    <div id="result"></div>
-  </div>
+  <div id="result"></div>
+</div>
 
-  <script>
-    const API_URL = "https://nutribliss-backend-3.onrender.com";
+<script>
+const API_URL = "https://nutribliss-backend-4.onrender.com";
 
-    async function trackOrder() {
-      const phone = document.getElementById("phone").value.trim();
-      const result = document.getElementById("result");
+const params = new URLSearchParams(window.location.search);
+const phoneFromUrl = params.get("phone");
 
-      result.innerHTML = "";
+if (phoneFromUrl) {
+  document.getElementById("phone").value = phoneFromUrl;
+  trackOrder();
+}
 
-      if (!phone) {
-        result.innerHTML = `<p class="error">Please enter phone number</p>`;
-        return;
-      }
+function getStatusClass(status) {
+  if (status === "Pending") return "status-pending";
+  if (status === "Processing") return "status-processing";
+  if (status === "Shipped") return "status-shipped";
+  if (status === "Delivered") return "status-delivered";
+  if (status === "Cancelled") return "status-cancelled";
+  return "status-pending";
+}
 
-      try {
-        const res = await fetch(`${API_URL}/track-order/${phone}`);
-        const data = await res.json();
+function isCOD(order) {
+  return order.paymentId === "COD";
+}
 
-        if (!res.ok) {
-          result.innerHTML = `<p class="error">${data.message || "No orders found"}</p>`;
-          return;
-        }
+async function trackOrder() {
+  const phone = document.getElementById("phone").value.trim();
+  const result = document.getElementById("result");
 
-        let html = "";
+  result.innerHTML = "";
 
-        data.forEach(order => {
-          html += `
-            <div class="order-card">
-              <p><strong>Name:</strong> ${order.name}</p>
-              <p><strong>Phone:</strong> ${order.phone}</p>
-              <p><strong>Total:</strong> ₹${order.total}</p>
-              <p><strong>Status:</strong> <span class="status">${order.status}</span></p>
-              <p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>
-              <p><strong>Date:</strong> ${new Date(order.date).toLocaleDateString()}</p>
-            </div>
+  if (!phone) {
+    result.innerHTML = `<p class="error">Please enter phone number</p>`;
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/track-order/${phone}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      result.innerHTML = `<p class="error">${data.message || "No orders found"}</p>`;
+      return;
+    }
+
+    let html = `<p class="success">${data.length} order(s) found</p>`;
+
+    data.forEach(order => {
+      let itemsHtml = "";
+
+      if (order.items && order.items.length > 0) {
+        order.items.forEach(item => {
+          itemsHtml += `
+            <p>
+              <strong>${item.name}</strong> -
+              ₹${item.price} × ${item.quantity}
+            </p>
           `;
         });
-
-        result.innerHTML = html;
-
-      } catch (error) {
-        result.innerHTML = `<p class="error">Something went wrong. Try again.</p>`;
+      } else {
+        itemsHtml = "<p>No items found</p>";
       }
-    }
-  </script>
+
+      const paymentMethod = isCOD(order) ? "Cash on Delivery" : "Online Payment";
+      const paymentClass = isCOD(order) ? "payment-cod" : "payment-online";
+
+      html += `
+        <div class="order-card">
+          <p><strong>Name:</strong> ${order.name}</p>
+          <p><strong>Phone:</strong> ${order.phone}</p>
+          <p><strong>Total:</strong> ₹${order.total}</p>
+
+          <p>
+            <strong>Payment Method:</strong>
+            <span class="payment-badge ${paymentClass}">
+              ${paymentMethod}
+            </span>
+          </p>
+
+          ${!isCOD(order) ? `<p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>` : ""}
+
+          <p>
+            <strong>Status:</strong>
+            <span class="status-badge ${getStatusClass(order.status)}">
+              ${order.status}
+            </span>
+          </p>
+
+          <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
+
+          <div class="items">
+            <strong>Items Ordered:</strong>
+            ${itemsHtml}
+          </div>
+        </div>
+      `;
+    });
+
+    result.innerHTML = html;
+
+  } catch (error) {
+    result.innerHTML = `<p class="error">Something went wrong. Try again.</p>`;
+  }
+}
+</script>
 
 </body>
 </html>
