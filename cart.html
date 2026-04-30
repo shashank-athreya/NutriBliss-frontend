@@ -208,7 +208,7 @@
 
 <script>
 function loadCart() {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let cart = JSON.parse(localStorage.getItem("cart") || []);
     const container = document.getElementById("cart-container");
     const totalDiv = document.getElementById("total");
     const checkoutBtn = document.getElementById("checkout-btn");
@@ -258,7 +258,7 @@ function loadCart() {
 }
 
 function changeQty(index, change) {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let cart = JSON.parse(localStorage.getItem("cart") || []);
     const stock = Number(cart[index].stock ?? 10);
 
     if (change > 0 && cart[index].quantity >= stock) {
@@ -277,12 +277,12 @@ function changeQty(index, change) {
 }
 
 function removeItem(index) {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let cart = JSON.parse(localStorage.getItem("cart") || []);
     cart.splice(index, 1);
     localStorage.setItem("cart", JSON.stringify(cart));
     loadCart();
 }
 
 function checkout() {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let cart = JSON.parse(localStorage.getItem("cart") || []);
 }
