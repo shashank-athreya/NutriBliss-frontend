@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
+        * { box-sizing: border-box; }
+
         body {
             font-family: Arial, sans-serif;
-            background: #fffaf2;
+            background: linear-gradient(135deg, #fffaf2, #eef8ee);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,21 +20,21 @@
 
         .success-box {
             background: white;
-            max-width: 500px;
+            max-width: 520px;
             width: 100%;
             padding: 35px;
-            border-radius: 20px;
+            border-radius: 22px;
             text-align: center;
-            box-shadow: 0 10px 28px rgba(0,0,0,0.12);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.12);
         }
 
         .icon {
-            font-size: 55px;
+            font-size: 60px;
             margin-bottom: 15px;
         }
 
         h1 {
-            color: #2e7d32;
+            color: #1b5e20;
             margin-bottom: 10px;
         }
 
@@ -45,25 +47,15 @@
             display: block;
             margin-top: 14px;
             padding: 14px;
-            border-radius: 10px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: bold;
         }
 
-        .track {
-            background: #ff7f00;
-            color: white;
-        }
-
-        .whatsapp {
-            background: #25d366;
-            color: white;
-        }
-
-        .shop {
-            background: #2e7d32;
-            color: white;
-        }
+        .track { background: #ff7f00; color: white; }
+        .receipt { background: #1976d2; color: white; }
+        .whatsapp { background: #25d366; color: white; }
+        .shop { background: #2e7d32; color: white; }
     </style>
 </head>
 
@@ -73,41 +65,27 @@
     <div class="icon">✅</div>
 
     <h1>Order Placed Successfully!</h1>
-    <p>Your payment was successful and your NutriBliss order has been received.</p>
-    <p>You can track your order using your phone number.</p>
+    <p>Your NutriBliss order has been received.</p>
+    <p>You can track your order and view your receipt using your phone number.</p>
 
-    <a class="track" id="track-link">Track My Order</a>
-    <a class="track" id="receipt-link">View Receipt</a>
-
-    <a id="whatsapp-link" class="whatsapp">
-        Confirm on WhatsApp
-    </a>
-
+    <a class="track" id="track-link" href="track-order.html">Track My Order</a>
+    <a class="receipt" id="receipt-link" href="receipt.html">View Receipt</a>
+    <a class="whatsapp" id="whatsapp-link" href="#">Confirm on WhatsApp</a>
     <a class="shop" href="index.html">Continue Shopping</a>
 </div>
 
 <script>
 const params = new URLSearchParams(window.location.search);
 const phone = params.get("phone");
-
-// 🔁 IMPORTANT: Replace with your WhatsApp number
-const WHATSAPP_NUMBER = "+918277148677";
+const WHATSAPP_NUMBER = "918277148677";
 
 if (phone) {
+    document.getElementById("track-link").href = `track-order.html?phone=${phone}`;
+    document.getElementById("receipt-link").href = `receipt.html?phone=${phone}`;
 
-    // Track order link
-    document.getElementById("track-link").href =
-        `track-order.html?phone=${phone}`;
-
-    // WhatsApp message
-    const message =
-        `Hi NutriBliss, I placed an order. My phone number is ${phone}.`;
-
-    // WhatsApp link
+    const message = `Hi NutriBliss, I placed an order. My phone number is ${phone}.`;
     document.getElementById("whatsapp-link").href =
         `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    
-    document.getElementById("receipt-link").href = 'receipt.html?phone=$(phone)';
 }
 </script>
 
