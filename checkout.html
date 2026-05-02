@@ -72,6 +72,11 @@
             color: #555;
         }
 
+        .discount {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
         .total {
             font-size: 23px;
             font-weight: bold;
@@ -101,6 +106,7 @@
         .pay-btn { background: #ff7f00; }
         .cod-btn { background: #6d4c41; }
         .back-btn { background: #2e7d32; }
+        .coupon-btn { background: #1976d2; }
 
         .note {
             font-size: 13px;
@@ -121,6 +127,15 @@
             margin: 6px 0;
             font-size: 14px;
         }
+
+        .coupon-message {
+            font-size: 13px;
+            margin-top: 6px;
+            font-weight: bold;
+        }
+
+        .coupon-success { color: #2e7d32; }
+        .coupon-error { color: #d32f2f; }
 
         .empty {
             text-align: center;
@@ -159,7 +174,7 @@
         </div>
 
         <p class="note">
-            Online payment has no extra COD charge. Cash on Delivery includes ₹30 handling charge.
+            Online payment has no COD charge. COD includes ₹30 handling charge.
         </p>
     </div>
 
@@ -167,25 +182,37 @@
         <h3>Order Summary</h3>
         <div id="order-items"></div>
 
+        <h3 style="margin-top:20px;">Coupon</h3>
+        <input id="coupon-code" placeholder="Enter coupon code">
+        <button class="coupon-btn" onclick="applyCoupon()">Apply Coupon</button>
+        <p id="coupon-message" class="coupon-message"></p>
+
         <div class="summary-line">
             <span>Cart Total</span>
             <strong id="cart-total">₹0</strong>
         </div>
-        
+
         <div class="summary-line">
             <span>Delivery Charge</span>
             <strong id="delivery-charge">₹0</strong>
         </div>
-        
+
+        <div class="summary-line">
+            <span>Discount</span>
+            <strong class="discount" id="discount">₹0</strong>
+        </div>
+
         <div class="summary-line">
             <span>COD Charge</span>
             <strong id="cod-charge">₹30</strong>
         </div>
-        
-        <div class="total" id="total">Total: ₹0</div>
-        
+
+        <div class="total" id="total">Online Total: ₹0</div>
         <p class="note">
             Free delivery above ₹999. ₹50 delivery charge below ₹999.
+        </p>
+        <p class="note">
+            Coupon codes: NUTRI10 gives 10% off, SAVE50 gives ₹50 off.
         </p>
     </div>
 
@@ -194,11 +221,15 @@
 <script>
 const API_URL = "https://nutribliss-backend-4.onrender.com";
 const RAZORPAY_KEY = "rzp_test_SjnWDMgCm0lsa7";
+
 const COD_CHARGE = 30;
 const DELIVERY_THRESHOLD = 999;
 const DELIVERY_CHARGE = 50;
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+let appliedCoupon = "";
+let discountAmount = 0;
 
 function calculateCartTotal() {
     return cart.reduce((sum, item) => {
@@ -206,21 +237,50 @@ function calculateCartTotal() {
     }, 0);
 }
 
+function calculateDelivery(cartTotal) {
+    return cartTotal >= DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
+}
+
+function calculateDiscount(cartTotal) {
+    const code = appliedCoupon.toUpperCase();
+
+    if (code === "NUTRI10") {
+        return Math.floor(cartTotal * 0.10);
+    }
+
+    if (code === "SAVE50") {
+        return cartTotal >= 50 ? 50 : 0;
+    }
+
+    return 0;
+}
+
+function getOnlineTotal() {
+    const cartTotal = calculateCartTotal();
+    const delivery = calculateDelivery(cartTotal);
+    const discount = calculateDiscount(cartTotal);
+
+    return cartTotal + delivery - discount;
+}
+
+function getCODTotal() {
+    return getOnlineTotal() + COD_CHARGE;
+}
+
 function loadOrder() {
     const list = document.getElementById("order-items");
-
     const cartTotal = calculateCartTotal();
+    const delivery = calculateDelivery(cartTotal);
 
-    const DELIVERY_THRESHOLD = 999;
-    const DELIVERY_CHARGE = 50;
-
-    const delivery = cartTotal >= DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
+    discountAmount = calculateDiscount(cartTotal);
 
     list.innerHTML = "";
 
     if (cart.length === 0) {
         list.innerHTML = `<p class="empty">Your cart is empty</p>`;
         document.getElementById("cart-total").innerText = "₹0";
+        document.getElementById("delivery-charge").innerText = "₹0";
+        document.getElementById("discount").innerText = "₹0";
         document.getElementById("total").innerText = "Online Total: ₹0";
         return;
     }
@@ -238,9 +298,38 @@ function loadOrder() {
 
     document.getElementById("cart-total").innerText = "₹" + cartTotal;
     document.getElementById("delivery-charge").innerText =
-    delivery === 0 ? "Free" : "₹" + delivery;
+        delivery === 0 ? "Free" : "₹" + delivery;
+    document.getElementById("discount").innerText = "-₹" + discountAmount;
     document.getElementById("total").innerText =
-    `Total: ₹${cartTotal + delivery}`;
+        `Online Total: ₹${getOnlineTotal()}`;
+}
+
+function applyCoupon() {
+    const code = document.getElementById("coupon-code").value.trim().toUpperCase();
+    const message = document.getElementById("coupon-message");
+
+    message.className = "coupon-message";
+
+    if (!code) {
+        appliedCoupon = "";
+        message.innerText = "Please enter a coupon code";
+        message.classList.add("coupon-error");
+        loadOrder();
+        return;
+    }
+
+    if (code !== "NUTRI10" && code !== "SAVE50") {
+        appliedCoupon = "";
+        message.innerText = "Invalid coupon code";
+        message.classList.add("coupon-error");
+        loadOrder();
+        return;
+    }
+
+    appliedCoupon = code;
+    message.innerText = `Coupon ${code} applied successfully ✅`;
+    message.classList.add("coupon-success");
+    loadOrder();
 }
 
 function getCustomerDetails() {
@@ -267,7 +356,10 @@ function getCustomerDetails() {
         name,
         address,
         phone,
-        cartTotal: calculateCartTotal()
+        cartTotal: calculateCartTotal(),
+        onlineTotal: getOnlineTotal(),
+        codTotal: getCODTotal(),
+        coupon: appliedCoupon
     };
 }
 
@@ -288,7 +380,7 @@ async function placeOrder() {
         const res = await fetch(`${API_URL}/create-order`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ amount: details.cartTotal })
+            body: JSON.stringify({ amount: details.onlineTotal })
         });
 
         const order = await res.json();
@@ -324,13 +416,16 @@ async function placeOrder() {
                         address: details.address,
                         phone: details.phone,
                         cart,
-                        total: details.cartTotal,
-                        paymentId: response.razorpay_payment_id
+                        total: details.onlineTotal,
+                        paymentId: response.razorpay_payment_id,
+                        coupon: details.coupon
                     })
                 });
 
+                const saveData = await saveRes.json();
+
                 if (!saveRes.ok) {
-                    alert("Payment done, but order saving failed. Please contact support.");
+                    alert(saveData.error || "Payment done, but order saving failed. Please contact support.");
                     return;
                 }
 
@@ -360,13 +455,7 @@ async function placeCOD() {
     const details = getCustomerDetails();
     if (!details) return;
 
-    const DELIVERY_THRESHOLD = 999;
-    const DELIVERY_CHARGE = 50;
-
-    const delivery = details.cartTotal >= DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
-    const codTotal = details.cartTotal + delivery + COD_CHARGE;
     const codBtn = document.getElementById("cod-btn");
-    
     codBtn.disabled = true;
     codBtn.innerText = "Placing order...";
 
@@ -379,8 +468,9 @@ async function placeCOD() {
                 address: details.address,
                 phone: details.phone,
                 cart,
-                total: codTotal,
-                paymentId: "COD"
+                total: details.codTotal,
+                paymentId: "COD",
+                coupon: details.coupon
             })
         });
 
