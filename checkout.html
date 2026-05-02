@@ -191,6 +191,8 @@
 const API_URL = "https://nutribliss-backend-4.onrender.com";
 const RAZORPAY_KEY = "rzp_test_SjnWDMgCm0lsa7";
 const COD_CHARGE = 30;
+const DELIVERY_THRESHOLD = 999;
+const DELIVERY_CHARGE = 50;
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
@@ -202,16 +204,20 @@ function calculateCartTotal() {
 
 function loadOrder() {
     const list = document.getElementById("order-items");
+
     const cartTotal = calculateCartTotal();
-    const codTotal = cartTotal + COD_CHARGE;
+
+    const DELIVERY_THRESHOLD = 999;
+    const DELIVERY_CHARGE = 50;
+
+    const delivery = cartTotal >= DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
 
     list.innerHTML = "";
 
     if (cart.length === 0) {
         list.innerHTML = `<p class="empty">Your cart is empty</p>`;
         document.getElementById("cart-total").innerText = "₹0";
-        document.getElementById("online-total").innerText = "₹0";
-        document.getElementById("total").innerText = "COD Total: ₹0";
+        document.getElementById("total").innerText = "Online Total: ₹0";
         return;
     }
 
@@ -227,8 +233,9 @@ function loadOrder() {
     });
 
     document.getElementById("cart-total").innerText = "₹" + cartTotal;
-    document.getElementById("online-total").innerText = "₹" + cartTotal;
-    document.getElementById("total").innerText = "COD Total: ₹" + codTotal;
+
+    document.getElementById("total").innerText =
+        `Online Total: ₹${cartTotal + delivery}`;
 }
 
 function getCustomerDetails() {
@@ -348,9 +355,13 @@ async function placeCOD() {
     const details = getCustomerDetails();
     if (!details) return;
 
-    const codTotal = details.cartTotal + COD_CHARGE;
+    const DELIVERY_THRESHOLD = 999;
+    const DELIVERY_CHARGE = 50;
 
+    const delivery = details.cartTotal >= DELIVERY_THRESHOLD ? 0 : DELIVERY_CHARGE;
+    const codTotal = details.cartTotal + delivery + COD_CHARGE;
     const codBtn = document.getElementById("cod-btn");
+    
     codBtn.disabled = true;
     codBtn.innerText = "Placing order...";
 
