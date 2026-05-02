@@ -9,49 +9,51 @@
 
     body {
       font-family: Arial, sans-serif;
-      background: #fffaf2;
+      background: linear-gradient(135deg, #fffaf2, #eef8ee);
       margin: 0;
-      padding: 30px;
+      padding: 24px;
+      color: #333;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 850px;
       margin: auto;
       background: white;
       padding: 28px;
-      border-radius: 18px;
+      border-radius: 22px;
       box-shadow: 0 10px 28px rgba(0,0,0,0.1);
     }
 
     h2 {
-      color: #2e7d32;
+      color: #1b5e20;
       text-align: center;
     }
 
     input {
       width: 100%;
-      padding: 13px;
+      padding: 14px;
       margin: 15px 0;
       border: 1px solid #ccc;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 16px;
     }
 
     button, .home-btn {
       width: 100%;
       display: block;
-      padding: 13px;
-      border-radius: 10px;
+      padding: 14px;
+      border-radius: 12px;
       text-align: center;
       text-decoration: none;
       font-weight: bold;
       border: none;
       cursor: pointer;
       margin-top: 12px;
+      font-size: 16px;
     }
 
     button {
-      background: #2e7d32;
+      background: #1b5e20;
       color: white;
     }
 
@@ -62,19 +64,25 @@
 
     .order-card {
       margin-top: 22px;
-      padding: 20px;
-      border-radius: 16px;
+      padding: 22px;
+      border-radius: 18px;
       background: #fffaf2;
-      border-left: 6px solid #2e7d32;
+      border-left: 6px solid #1b5e20;
       box-shadow: 0 6px 18px rgba(0,0,0,0.08);
     }
 
-    .status-badge, .payment-badge {
-      padding: 5px 10px;
-      border-radius: 8px;
+    .order-card p {
+      margin: 8px 0;
+    }
+
+    .status-badge,
+    .payment-badge {
+      padding: 6px 11px;
+      border-radius: 20px;
       color: white;
       font-weight: bold;
       display: inline-block;
+      font-size: 13px;
     }
 
     .status-pending { background: #fbc02d; color: #333; }
@@ -86,48 +94,72 @@
     .payment-cod { background: #6d4c41; }
     .payment-online { background: #1565c0; }
 
-    .timeline {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin: 18px 0;
+    .timeline-container {
+      display: flex;
+      justify-content: space-between;
+      margin: 22px 0;
+      gap: 10px;
+      position: relative;
     }
 
     .step {
-      background: #ddd;
-      padding: 10px;
-      border-radius: 12px;
       text-align: center;
-      font-size: 13px;
+      flex: 1;
+      position: relative;
+    }
+
+    .circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #ccc;
+      margin: auto;
+      line-height: 34px;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .step.active .circle {
+      background: #2e7d32;
+    }
+
+    .step.current .circle {
+      background: #ff7f00;
+    }
+
+    .step p {
+      font-size: 12px;
+      margin-top: 7px;
       font-weight: bold;
       color: #555;
-    }
-
-    .step.done {
-      background: #2e7d32;
-      color: white;
-    }
-
-    .step.current {
-      background: #ff7f00;
-      color: white;
     }
 
     .cancelled-box {
       background: #ffebee;
       color: #d32f2f;
-      padding: 12px;
-      border-radius: 10px;
+      padding: 13px;
+      border-radius: 12px;
       font-weight: bold;
-      margin: 15px 0;
+      margin: 16px 0;
       text-align: center;
     }
 
     .items {
-      margin-top: 12px;
-      padding: 12px;
+      margin-top: 14px;
+      padding: 14px;
       background: white;
-      border-radius: 12px;
+      border-radius: 14px;
+      border: 1px solid #f1e5d0;
+    }
+
+    .item-row {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .item-row:last-child {
+      border-bottom: none;
     }
 
     .error {
@@ -138,15 +170,39 @@
     }
 
     .success {
-      color: #2e7d32;
+      color: #1b5e20;
       margin-top: 15px;
       text-align: center;
       font-weight: bold;
     }
 
     @media(max-width: 600px) {
-      .timeline {
-        grid-template-columns: 1fr;
+      body {
+        padding: 14px;
+      }
+
+      .container {
+        padding: 20px;
+      }
+
+      .timeline-container {
+        flex-direction: column;
+      }
+
+      .step {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-align: left;
+      }
+
+      .circle {
+        margin: 0;
+        flex-shrink: 0;
+      }
+
+      .step p {
+        margin: 0;
       }
     }
   </style>
@@ -195,18 +251,29 @@ function getTimeline(status) {
 
   const currentIndex = steps.indexOf(status);
 
-  return `
-    <div class="timeline">
-      ${steps.map((step, index) => {
-        let className = "step";
+  let html = `<div class="timeline-container">`;
 
-        if (index < currentIndex) className += " done";
-        if (index === currentIndex) className += " current";
+  steps.forEach((step, index) => {
+    let className = "step";
 
-        return `<div class="${className}">${step}</div>`;
-      }).join("")}
-    </div>
-  `;
+    if (index < currentIndex) {
+      className += " active";
+    }
+
+    if (index === currentIndex) {
+      className += " current";
+    }
+
+    html += `
+      <div class="${className}">
+        <div class="circle">${index <= currentIndex ? "✓" : ""}</div>
+        <p>${step}</p>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+  return html;
 }
 
 function isCOD(order) {
@@ -221,6 +288,11 @@ async function trackOrder() {
 
   if (!phone) {
     result.innerHTML = `<p class="error">Please enter phone number</p>`;
+    return;
+  }
+
+  if (!/^[6-9]\\d{9}$/.test(phone)) {
+    result.innerHTML = `<p class="error">Please enter a valid 10-digit phone number</p>`;
     return;
   }
 
@@ -240,11 +312,13 @@ async function trackOrder() {
 
       if (order.items && order.items.length > 0) {
         order.items.forEach(item => {
+          const itemTotal = Number(item.price) * Number(item.quantity);
+
           itemsHtml += `
-            <p>
-              <strong>${item.name}</strong> -
-              ₹${item.price} × ${item.quantity}
-            </p>
+            <div class="item-row">
+              <strong>${item.name}</strong><br>
+              ₹${item.price} × ${item.quantity} = ₹${itemTotal}
+            </div>
           `;
         });
       } else {
