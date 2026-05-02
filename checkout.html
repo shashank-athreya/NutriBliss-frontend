@@ -61,9 +61,7 @@
             padding: 12px 0;
         }
 
-        .item strong {
-            color: #1b5e20;
-        }
+        .item strong { color: #1b5e20; }
 
         .summary-line {
             display: flex;
@@ -208,12 +206,9 @@
         </div>
 
         <div class="total" id="total">Online Total: ₹0</div>
-        <p class="note">
-            Free delivery above ₹999. ₹50 delivery charge below ₹999.
-        </p>
-        <p class="note">
-            Coupon codes: NUTRI10 gives 10% off, SAVE50 gives ₹50 off.
-        </p>
+
+        <p class="note">Free delivery above ₹999. ₹50 delivery charge below ₹999.</p>
+        <p class="note">Coupon codes: NUTRI10 gives 10% off, SAVE50 gives ₹50 off.</p>
     </div>
 
 </div>
@@ -297,9 +292,12 @@ function loadOrder() {
     });
 
     document.getElementById("cart-total").innerText = "₹" + cartTotal;
+
     document.getElementById("delivery-charge").innerText =
         delivery === 0 ? "Free" : "₹" + delivery;
+
     document.getElementById("discount").innerText = "-₹" + discountAmount;
+
     document.getElementById("total").innerText =
         `Online Total: ₹${getOnlineTotal()}`;
 }
@@ -430,8 +428,7 @@ async function placeOrder() {
                 }
 
                 localStorage.removeItem("cart");
-                window.location.href = `success.html?phone=${details.phone}&name=${encodeURIComponent{details.name}}`;
-
+                window.location.href = `success.html?phone=${details.phone}&name=${encodeURIComponent(details.name)}`;
             },
 
             modal: {
@@ -485,7 +482,8 @@ async function placeCOD() {
         }
 
         localStorage.removeItem("cart");
-        window.location.href = `success.html?phone=${details.phone}&name=${encodeURIComponent{details.name}}`;
+        window.location.href = `success.html?phone=${details.phone}&name=${encodeURIComponent(details.name)}`;
+
     } catch (err) {
         alert("Order failed ❌");
         codBtn.disabled = false;
