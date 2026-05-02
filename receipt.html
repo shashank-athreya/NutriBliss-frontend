@@ -9,9 +9,9 @@
 
         body {
             font-family: Arial, sans-serif;
-            background: #fffaf2;
+            background: linear-gradient(135deg, #fffaf2, #eef8ee);
             margin: 0;
-            padding: 30px;
+            padding: 24px;
             color: #333;
         }
 
@@ -19,22 +19,22 @@
             max-width: 850px;
             margin: auto;
             background: white;
-            padding: 30px;
-            border-radius: 20px;
+            padding: 28px;
+            border-radius: 22px;
             box-shadow: 0 10px 28px rgba(0,0,0,0.1);
         }
 
         h1, h2 {
-            color: #2e7d32;
+            color: #1b5e20;
             text-align: center;
         }
 
         input {
             width: 100%;
-            padding: 13px;
+            padding: 14px;
             margin: 15px 0;
             border: 1px solid #ccc;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
         }
 
@@ -43,7 +43,7 @@
             width: 100%;
             text-align: center;
             padding: 14px;
-            border-radius: 10px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: bold;
             border: none;
@@ -52,40 +52,48 @@
             font-size: 16px;
         }
 
-        button {
-            background: #2e7d32;
-            color: white;
-        }
-
-        .home {
-            background: #ff7f00;
-            color: white;
-        }
+        button { background: #1b5e20; color: white; }
+        .home { background: #ff7f00; color: white; }
+        .print-btn { background: #1976d2; color: white; }
 
         .receipt-card {
             margin-top: 25px;
             padding: 22px;
-            border-radius: 16px;
+            border-radius: 18px;
             background: #fffaf2;
-            border-left: 6px solid #2e7d32;
+            border-left: 6px solid #1b5e20;
         }
 
-        .receipt-card p {
-            margin: 8px 0;
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid #eadfce;
+            padding: 9px 0;
         }
 
         .items {
-            margin-top: 12px;
+            margin-top: 14px;
             background: white;
-            padding: 12px;
-            border-radius: 12px;
+            padding: 14px;
+            border-radius: 14px;
+        }
+
+        .item-row {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
         }
 
         .total {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
             color: #ff7f00;
-            margin-top: 12px;
+            margin-top: 15px;
+            text-align: right;
         }
 
         .error {
@@ -96,15 +104,16 @@
         }
 
         .success {
-            color: #2e7d32;
+            color: #1b5e20;
             font-weight: bold;
             text-align: center;
             margin-top: 15px;
         }
 
-        .print-btn {
-            background: #1976d2;
-            color: white;
+        @media(max-width: 600px) {
+            body { padding: 14px; }
+            .container { padding: 20px; }
+            .receipt-row { flex-direction: column; }
         }
 
         @media print {
@@ -181,11 +190,13 @@ async function loadReceipt() {
 
         if (order.items && order.items.length > 0) {
             order.items.forEach(item => {
+                const itemTotal = Number(item.price) * Number(item.quantity);
+
                 itemsHtml += `
-                    <p>
-                        <strong>${item.name}</strong> -
-                        ₹${item.price} × ${item.quantity}
-                    </p>
+                    <div class="item-row">
+                        <strong>${item.name}</strong><br>
+                        ₹${item.price} × ${item.quantity} = ₹${itemTotal}
+                    </div>
                 `;
             });
         } else {
@@ -200,17 +211,17 @@ async function loadReceipt() {
             <div class="receipt-card">
                 <h2>Order Receipt</h2>
 
-                <p><strong>Customer:</strong> ${order.name}</p>
-                <p><strong>Phone:</strong> ${order.phone}</p>
-                <p><strong>Address:</strong> ${order.address || "N/A"}</p>
-                <p><strong>Date:</strong> ${new Date(order.date).toLocaleString()}</p>
-                <p><strong>Status:</strong> ${order.status}</p>
-                <p><strong>Payment Method:</strong> ${paymentMethod}</p>
+                <div class="receipt-row"><strong>Customer</strong><span>${order.name}</span></div>
+                <div class="receipt-row"><strong>Phone</strong><span>${order.phone}</span></div>
+                <div class="receipt-row"><strong>Address</strong><span>${order.address || "N/A"}</span></div>
+                <div class="receipt-row"><strong>Date</strong><span>${new Date(order.date).toLocaleString()}</span></div>
+                <div class="receipt-row"><strong>Status</strong><span>${order.status}</span></div>
+                <div class="receipt-row"><strong>Payment</strong><span>${paymentMethod}</span></div>
 
-                ${!isCOD(order) ? `<p><strong>Payment ID:</strong> ${order.paymentId || "N/A"}</p>` : ""}
+                ${!isCOD(order) ? `<div class="receipt-row"><strong>Payment ID</strong><span>${order.paymentId || "N/A"}</span></div>` : ""}
 
                 <div class="items">
-                    <strong>Items:</strong>
+                    <strong>Items Ordered:</strong>
                     ${itemsHtml}
                 </div>
 
