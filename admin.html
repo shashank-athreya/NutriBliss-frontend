@@ -232,9 +232,15 @@
     </div>
 
     <div class="stats">
+        <div class="stat-card"><h3>Today Revenue</h3><p>₹<span id="today-revenue">0</span></p></div>
+        <div class="stat-card"><h3>Today Orders</h3><p id="today-orders">0</p></div>
         <div class="stat-card"><h3>Total Revenue</h3><p>₹<span id="revenue">0</span></p></div>
         <div class="stat-card"><h3>Total Orders</h3><p id="orders">0</p></div>
         <div class="stat-card"><h3>Pending Orders</h3><p id="pending">0</p></div>
+        <div class="stat-card"><h3>Delivered Orders</h3><p id="delivered">0</p></div>
+        <div class="stat-card"><h3>Cancelled Orders</h3><p id="cancelled">0</p></div>
+        <div class="stat-card"><h3>COD Orders</h3><p id="cod-orders">0</p></div>
+        <div class="stat-card"><h3>Online Orders</h3><p id="online-orders">0</p></div>
         <div class="stat-card"><h3>Total Products</h3><p id="total-products">0</p></div>
         <div class="stat-card"><h3>Low Stock</h3><p id="low-stock">0</p></div>
         <div class="stat-card"><h3>Out of Stock</h3><p id="out-stock">0</p></div>
@@ -311,12 +317,21 @@ function logout() {
 }
 
 async function loadProducts() {
-    const res = await fetch(`${API}/products`);
-    const data = await res.json();
+    try {
+        const res = await fetch(`${API}/products`);
 
-    allProducts = data || [];
-    updateProductStats();
-    render(allProducts);
+        if (!res.ok) throw new Error("Failed to fetch products");
+
+        const data = await res.json();
+
+        allProducts = data || [];
+        updateProductStats();
+        render(allProducts);
+
+    } catch (err) {
+        document.getElementById("list").innerHTML =
+            "<p style='color:red;'>Failed to load products</p>";
+    }
 }
 
 function updateProductStats() {
@@ -393,6 +408,11 @@ async function addProduct() {
 
     if (handleAuthError(res)) return;
 
+    if (!res.ok) {
+        alert("Failed to add product");
+        return;
+    }
+
     document.getElementById("name").value = "";
     document.getElementById("price").value = "";
     document.getElementById("image").value = "";
@@ -411,6 +431,11 @@ async function del(id) {
     });
 
     if (handleAuthError(res)) return;
+
+    if (!res.ok) {
+        alert("Delete failed");
+        return;
+    }
 
     loadProducts();
 }
@@ -444,6 +469,11 @@ async function edit(id, name, price, image, category, stock) {
 
     if (handleAuthError(res)) return;
 
+    if (!res.ok) {
+        alert("Update failed");
+        return;
+    }
+
     loadProducts();
 }
 
@@ -461,25 +491,63 @@ function filterProducts() {
 }
 
 async function loadAnalytics() {
-    const res = await fetch(`${API}/orders`, {
-        headers: { Authorization: `Bearer ${token}` }
-    });
+    try {
+        const res = await fetch(`${API}/orders`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
-    if (handleAuthError(res)) return;
+        if (handleAuthError(res)) return;
 
-    const data = await res.json();
+        if (!res.ok) throw new Error("Failed to fetch orders");
 
-    let revenue = 0;
-    let pending = 0;
+        const data = await res.json();
 
-    data.forEach(o => {
-        revenue += Number(o.total) || 0;
-        if (o.status === "Pending") pending++;
-    });
+        let revenue = 0;
+        let todayRevenue = 0;
+        let todayOrders = 0;
+        let pending = 0;
+        let delivered = 0;
+        let cancelled = 0;
+        let codOrders = 0;
+        let onlineOrders = 0;
 
-    document.getElementById("revenue").innerText = revenue;
-    document.getElementById("orders").innerText = data.length;
-    document.getElementById("pending").innerText = pending;
+        const today = new Date().toDateString();
+
+        data.forEach(order => {
+            const total = Number(order.total) || 0;
+            const orderDate = new Date(order.date).toDateString();
+
+            revenue += total;
+
+            if (orderDate === today) {
+                todayRevenue += total;
+                todayOrders++;
+            }
+
+            if (order.status === "Pending") pending++;
+            if (order.status === "Delivered") delivered++;
+            if (order.status === "Cancelled") cancelled++;
+
+            if (order.paymentId === "COD") {
+                codOrders++;
+            } else {
+                onlineOrders++;
+            }
+        });
+
+        document.getElementById("today-revenue").innerText = todayRevenue;
+        document.getElementById("today-orders").innerText = todayOrders;
+        document.getElementById("revenue").innerText = revenue;
+        document.getElementById("orders").innerText = data.length;
+        document.getElementById("pending").innerText = pending;
+        document.getElementById("delivered").innerText = delivered;
+        document.getElementById("cancelled").innerText = cancelled;
+        document.getElementById("cod-orders").innerText = codOrders;
+        document.getElementById("online-orders").innerText = onlineOrders;
+
+    } catch (err) {
+        console.error("Analytics loading failed");
+    }
 }
 </script>
 
