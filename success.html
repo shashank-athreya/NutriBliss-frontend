@@ -88,12 +88,11 @@ const WHATSAPP_NUMBER = "918277148677";
 
 const params = new URLSearchParams(window.location.search);
 const phone = params.get("phone");
-const name = params.get("name") || "Customer";
+const nameFromUrl = params.get("name") || "Customer";
 
 if (phone) {
     document.getElementById("track-link").href = `track-order.html?phone=${phone}`;
     document.getElementById("receipt-link").href = `receipt.html?phone=${phone}`;
-
     loadWhatsAppMessage(phone);
 }
 
@@ -105,16 +104,18 @@ async function loadWhatsAppMessage(phone) {
         const orders = await res.json();
 
         if (!res.ok || !orders || orders.length === 0) {
-            const message = 
-                `Hi NutriBliss 👋
+            const fallbackMessage =
+`Hi NutriBliss 👋
 
-                Name: ${phone}  
-                Phone: ${phone}
+Name: ${nameFromUrl}
+Phone: ${phone}
 
-                I have placed an order. Please confirm.
+I have placed an order. Please confirm.
 
-                Thank you!`;
-            whatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(fallbackMessage)}`;
+Thank you!`;
+
+            whatsappLink.href =
+                `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(fallbackMessage)}`;
             return;
         }
 
@@ -124,32 +125,50 @@ async function loadWhatsAppMessage(phone) {
 
         if (latestOrder.items && latestOrder.items.length > 0) {
             latestOrder.items.forEach(item => {
-                itemsText += `\n- ${item.name} x ${item.quantity} = ₹${Number(item.price) * Number(item.quantity)}`;
+                const itemTotal = Number(item.price) * Number(item.quantity);
+                itemsText += `\n- ${item.name} x ${item.quantity} = ₹${itemTotal}`;
             });
+        } else {
+            itemsText = "\n- Items not available";
         }
 
         const paymentMethod = latestOrder.paymentId === "COD"
             ? "Cash on Delivery"
             : "Online Payment";
 
-        const message =
-`Hi NutriBliss, I placed an order.
+        const customerName = latestOrder.name || nameFromUrl;
 
+        const message =
+`Hi NutriBliss 👋
+
+I have placed an order. Please confirm.
+
+Name: ${customerName}
 Phone: ${latestOrder.phone}
-Customer: ${latestOrder.name}
 Payment: ${paymentMethod}
 Total: ₹${latestOrder.total}
 Status: ${latestOrder.status}
 
 Items:${itemsText}
 
-Please confirm my order.`;
+Thank you!`;
 
-        whatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+        whatsappLink.href =
+            `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
     } catch (error) {
-        const fallbackMessage = `Hi NutriBliss, I placed an order. My phone number is ${phone}.`;
-        whatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(fallbackMessage)}`;
+        const fallbackMessage =
+`Hi NutriBliss 👋
+
+Name: ${nameFromUrl}
+Phone: ${phone}
+
+I have placed an order. Please confirm.
+
+Thank you!`;
+
+        whatsappLink.href =
+            `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(fallbackMessage)}`;
     }
 }
 </script>
