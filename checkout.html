@@ -430,7 +430,8 @@ async function placeOrder() {
                 }
 
                 localStorage.removeItem("cart");
-                window.location.href = `success.html?phone=${details.phone}`;
+                window.location.href = 'success.html?phone=${details.phone}&name=${encodeURIComponent{details.name}}';
+
             },
 
             modal: {
@@ -484,8 +485,7 @@ async function placeCOD() {
         }
 
         localStorage.removeItem("cart");
-        window.location.href = `success.html?phone=${details.phone}`;
-
+        window.location.href = 'success.html?phone=${details.phone}&name=${encodeURIComponent{details.name}}';
     } catch (err) {
         alert("Order failed ❌");
         codBtn.disabled = false;

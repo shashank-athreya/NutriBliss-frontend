@@ -88,6 +88,7 @@ const WHATSAPP_NUMBER = "918277148677";
 
 const params = new URLSearchParams(window.location.search);
 const phone = params.get("phone");
+const name = params.get("name") || "Customer";
 
 if (phone) {
     document.getElementById("track-link").href = `track-order.html?phone=${phone}`;
@@ -104,7 +105,15 @@ async function loadWhatsAppMessage(phone) {
         const orders = await res.json();
 
         if (!res.ok || !orders || orders.length === 0) {
-            const fallbackMessage = `Hi NutriBliss, I placed an order. My phone number is ${phone}.`;
+            const message = 
+                `Hi NutriBliss 👋
+
+                Name: ${phone}  
+                Phone: ${phone}
+
+                I have placed an order. Please confirm.
+
+                Thank you!`;
             whatsappLink.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(fallbackMessage)}`;
             return;
         }
