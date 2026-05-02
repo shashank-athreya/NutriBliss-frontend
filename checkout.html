@@ -171,18 +171,22 @@
             <span>Cart Total</span>
             <strong id="cart-total">₹0</strong>
         </div>
-
+        
         <div class="summary-line">
-            <span>Online Payment Total</span>
-            <strong id="online-total">₹0</strong>
+            <span>Delivery Charge</span>
+            <strong id="delivery-charge">₹0</strong>
         </div>
-
+        
         <div class="summary-line">
             <span>COD Charge</span>
-            <strong>₹30</strong>
+            <strong id="cod-charge">₹30</strong>
         </div>
-
-        <div class="total" id="total">COD Total: ₹0</div>
+        
+        <div class="total" id="total">Total: ₹0</div>
+        
+        <p class="note">
+            Free delivery above ₹999. ₹50 delivery charge below ₹999.
+        </p>
     </div>
 
 </div>
@@ -233,9 +237,10 @@ function loadOrder() {
     });
 
     document.getElementById("cart-total").innerText = "₹" + cartTotal;
-
+    document.getElementById("delivery-charge").innerText =
+    delivery === 0 ? "Free" : "₹" + delivery;
     document.getElementById("total").innerText =
-        `Online Total: ₹${cartTotal + delivery}`;
+    `Total: ₹${cartTotal + delivery}`;
 }
 
 function getCustomerDetails() {
