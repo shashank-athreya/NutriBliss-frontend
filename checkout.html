@@ -430,7 +430,7 @@ async function placeOrder() {
                 }
 
                 localStorage.removeItem("cart");
-                window.location.href = 'success.html?phone=${details.phone}&name=${encodeURIComponent{details.name}}';
+                window.location.href = `success.html?phone=${details.phone}&name=${encodeURIComponent{details.name}}`;
 
             },
 
@@ -485,7 +485,7 @@ async function placeCOD() {
         }
 
         localStorage.removeItem("cart");
-        window.location.href = 'success.html?phone=${details.phone}&name=${encodeURIComponent{details.name}}';
+        window.location.href = `success.html?phone=${details.phone}&name=${encodeURIComponent{details.name}}`;
     } catch (err) {
         alert("Order failed ❌");
         codBtn.disabled = false;
